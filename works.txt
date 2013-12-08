@@ -11,7 +11,7 @@ boolean for up/down and left/right paddle movement
 graphics for each element
 ball
 paddle
-pulses
+pulse
 contact with ball
 background
 levels
@@ -41,17 +41,23 @@ stage.frameRate = 30;
 var stageWidth:int = 1000;
 var stageHeight:int = 650;
 
+var freezeFieldX:int;
+var freezeFieldY:int;
 //speed at which paddle moves when UP/DOWN/LEFT/RIGHT is pushed
 var paddleSpeedIncrement:int = 40;
 
+
+var freezeDuration:Number = 20;
+var endFreeze:Number = -1;
 
 var currentLevel:int = 1;
 
 
 var gameTime:int;
+var gameTimeSec:int;
 
 //initial duration of time, i.e. what the timer starts at every time it's reset
-var levelDuration:int = 10;
+var levelDuration:Number = 100;
 
 //displays time on screen
 var timeDisplay:TextField = new TextField();
@@ -67,37 +73,13 @@ timeDisplay.defaultTextFormat = timeDisplayFormat;
 timeDisplay.setTextFormat(timeDisplayFormat);
 
 
-//sets game timer to level duration
+//sets game timer to level duration;
 gameTime = levelDuration;
-var gameTimer:Timer = new Timer(1000,levelDuration);
+var gameTimer:Timer = new Timer(100,levelDuration);
 gameTimer.addEventListener(TimerEvent.TIMER, updateTime);
 gameTimer.addEventListener(TimerEvent.TIMER_COMPLETE, timeExpired);
 
-//time counts down by 1 every second
-function updateTime(e:TimerEvent):void
-{ 
-    //timer counts down by 1
-	gameTime--;
-    //displays time on screen
-    timeDisplay.text = "Time : " + String(gameTime);
-}
-
-
-
-
-function debug(event:KeyboardEvent)
-{
-	trace("\n\n************************\n");
-	trace("width = " + paddle.width);
-	trace("height = " + paddle.height);
-	trace("x = " + paddle.x);
-	trace("y = " + paddle.y);
-	trace("button = " + event.keyCode);
-	trace("previousState = " + previousState);
-	trace("currentState = " + currentState);
-}
-
-//used to determine position of paddle, i.e. what wall is it on?
+//used to determine position of paddle, i.e. what wall is it on?;
 const LEFT:int = 1;
 const RIGHT:int = 3;
 const CEILING:int = 2;
@@ -124,6 +106,8 @@ addChild(greetingContainer);
 
 //contains game elements
 var gameContainer:Sprite=new Sprite();
+var disappearTime : int = 0;
+var blinkTime : int = 3;
 
 //contains elements that appear after game over
 var endGame:Sprite=new Sprite();
@@ -149,13 +133,13 @@ greetingText.text = "Hello Player,\n\nHit the ball with the paddle to earn point
 greetingText.autoSize = TextFieldAutoSize.CENTER;
 greetingText.setTextFormat(txtFormat);
 
-//contains textfield that displays text between each level
+//contains textfield that displays text between each level;
 var betweenLevelContainer:Sprite = new Sprite();
 
 //text that appears between each level
 var levelChangeText:TextField=new TextField();
-levelChangeText.x = ((stageWidth - levelChangeText.width)/2);
-levelChangeText.y = ((stageHeight - levelChangeText.height)/2);
+levelChangeText.x = ((stageWidth - levelChangeText.width) / 2);
+levelChangeText.y = ((stageHeight - levelChangeText.height) / 2);
 levelChangeText.background = true;
 levelChangeText.backgroundColor = 0x00ddfc;
 levelChangeText.text = "Level " + currentLevel.toString() + " is about to begin" +
@@ -171,27 +155,42 @@ ball.graphics.drawCircle(0,0,10);
 gameContainer.addChild(ball);
 
 
-//used to determine of paddle is horizontal or vertical
+//used to determine of paddle is horizontal or vertical;
 //false = horizontal
 //true = vertical
 var isHorizontal:Boolean = false;
 
-//paddle
+var paddleContainer:Sprite = new Sprite();
+paddleContainer.x = 410;
+paddleContainer.y = 615;
+gameContainer.addChild(paddleContainer);
+
+//paddle;
 var paddle:Sprite=new Sprite();
 paddle.graphics.beginFill(0xFF0000);
 //paddle.graphics.drawRect(10,10,paddleWidth,paddleHeight);
 paddle.graphics.drawRect(0,0,90,10);
-paddle.x = 410;
-paddle.y = 615;
-gameContainer.addChild(paddle);
+paddleContainer.addChild(paddle);
 paddle.focusRect = false;
+
+
+
+var freezeContainer:Sprite = new Sprite();
+freezeContainer.y = -1000;
+var freezeLdr:Loader = new Loader();
+var freezeURL:String = "ice.png";
+var freezeURLReq:URLRequest = new URLRequest(freezeURL);
+freezeLdr.load(freezeURLReq);
+freezeLdr.contentLoaderInfo.addEventListener(Event.COMPLETE, freezeLoaded);
+
 
 //freeze field;
 var freezeField:Sprite = new Sprite();
+freezeField.name = "freezeField";
 freezeField.graphics.beginFill(0xaabbcc);
-freezeField.graphics.drawRect(0,0,90,500);
-freezeField.y = -500;
-paddle.addChild(freezeField);
+//freezeField.alpha = 0;
+freezeField.graphics.drawRect(0,0,90,1000);
+freezeField.y = -1000;
 
 //ball movement increments
 var xCircleAdd:Number = 5;
@@ -223,11 +222,13 @@ gameSound.load(gameUrlReq);
 var channel:SoundChannel = gameSound.play();
 var pausePosition:int;
 
-//displays score during game (score based on hitCount below)
-var scoreDisplay:TextField=new TextField();
 var scoreText:TextFormat=new TextFormat();
 scoreText.font = "Arial";
 scoreText.size = 18;
+
+
+//displays score during game (score based on hitCount below)
+var scoreDisplay:TextField=new TextField();
 scoreDisplay.background = true;
 scoreDisplay.backgroundColor = 0xffaaff;
 scoreDisplay.y = 0;
@@ -238,7 +239,7 @@ scoreDisplay.defaultTextFormat = scoreText;
 scoreDisplay.setTextFormat(scoreText);
 
 
-//appears when game is paused
+//appears when game is paused;
 var pauseText:TextField=new TextField();
 pauseText.x = 200;
 pauseText.y = 200;
@@ -278,7 +279,7 @@ inputInstruct.setTextFormat(txtFormat);
 var playerName:String;
 
 //player types name into box
-var inputFld:TextField = new TextField;
+var inputFld:TextField = new TextField  ;
 inputFld.width = 200;
 inputFld.height = 50;
 inputFld.x = ((stageWidth - inputFld.width)/2) - 20;
@@ -316,13 +317,78 @@ restartButtonText.autoSize = TextFieldAutoSize.LEFT;
 restartButtonText.setTextFormat(txtFormat);
 
 inputFld.addEventListener(Event.CHANGE, inputFldChange);
-//converts input text into name that will be placed into nameArray;
-function inputFldChange(event:Event)
-{
-	playerName = inputFld.text;
-}
+
+
 
 inputFld.addEventListener(KeyboardEvent.KEY_DOWN, enterName);
+
+//game starts when player presses any key;
+greetingContainer.addEventListener(KeyboardEvent.KEY_DOWN, startGame);
+greetingContainer.addChild(greetingText);
+
+stage.focus = greetingText;
+greetingText.focusRect = false;
+
+channel.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
+
+
+//game restarts when player clicks restartButton;
+restartButton.addEventListener(MouseEvent.MOUSE_DOWN, restartGame);
+//paddle movement;
+paddleContainer.addEventListener(KeyboardEvent.KEY_DOWN,paddleMove);
+paddleContainer.addEventListener(KeyboardEvent.KEY_DOWN, paddleShift);
+paddleContainer.addEventListener(KeyboardEvent.KEY_DOWN, powers);
+betweenLevelContainer.addChild(levelChangeText);
+betweenLevelContainer.addEventListener(KeyboardEvent.KEY_DOWN, betweenText);
+
+
+
+
+
+
+
+//==========================P O W E R S=============================//
+function powers(event:KeyboardEvent):void
+{
+
+	//freeze field
+	if (event.keyCode == 69)
+	{
+		//paddleContainer.addChild(freezeField);
+		freezeFieldX = paddleContainer.x;
+		freezeFieldY = paddleContainer.y;
+
+		paddleContainer.addChild(freezeField);
+		disappearTime = gameTime - blinkTime;
+
+	}
+
+	/*//pulse
+	if (event.keyCode == 82)
+	{
+	trace("3 was pressed");
+	currentState = RIGHT;
+	newx = 980;
+	freezeField.height = 970;
+	freezeField.y = 10;
+	}*/
+}
+function ballFreeze()
+{
+	
+	
+	if (ball.hitTestObject(freezeField))
+	{
+		hitSound.play();
+		this.removeEventListener(Event.ENTER_FRAME, doEveryFrame);
+		endFreeze = gameTime - freezeDuration;
+		
+	}
+}
+
+
+
+//===========================H I G H = S C O R E========================//
 
 //displays high scores and restart message;
 function enterName(event:KeyboardEvent):void
@@ -430,54 +496,8 @@ function sortHighScores()
 	}
 }
 
-greetingContainer.addChild(greetingText);
+//===========================M O V E M E N T===========================//
 
-//game starts when player presses any key;
-greetingContainer.addEventListener(KeyboardEvent.KEY_DOWN, startGame);
-function startGame(event:KeyboardEvent):void
-{
-	removeChild(greetingContainer);
-	addChild(gameContainer);
-	isHorizontal = false;
-	gameContainer.addChild(scoreDisplay);
-	gameContainer.addChild(timeDisplay);
-	stage.focus = paddle;
-	this.addEventListener(Event.ENTER_FRAME, doEveryFrame);
-	startLevel();
-}
-
-//game restarts when player clicks restartButton
-restartButton.addEventListener(MouseEvent.MOUSE_DOWN, restartGame);
-function restartGame(event:MouseEvent):void
-{
-	endGame.removeChild(endText);
-	endGame.removeChild(restartButton);
-	endGame.removeChild(restartButtonText);
-	endGame.removeChild(highScoreText);
-	channel = gameSound.play();
-	lostBallCount = 0;
-	hitCount = 0;
-	gameTime = levelDuration;
-	scoreDisplay.text = "Score: " + hitCount.toString();
-	addChild(gameContainer);
-	ball.y = 20;
-	ball.x = 20;
-	this.addEventListener(Event.ENTER_FRAME, doEveryFrame);
-	stage.focus = paddle;
-}
-
-stage.focus = greetingText;
-greetingText.focusRect = false;
-
-channel.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
-function onPlaybackComplete(event:Event)
-{
-	trace("The sound has finished playing, play again.");
-	channel = gameSound.play();
-}
-
-//paddle movement
-paddle.addEventListener(KeyboardEvent.KEY_DOWN,paddleMove);
 function paddleMove(event:KeyboardEvent):void
 {
 
@@ -488,16 +508,16 @@ function paddleMove(event:KeyboardEvent):void
 		{
 
 			case Keyboard.LEFT :
-				if (paddle.x > 0)
+				if (paddleContainer.x > 0)
 				{
-					paddle.x -=  paddleSpeedIncrement;
+					paddleContainer.x -=  paddleSpeedIncrement;
 				}
 				break;
 
 			case Keyboard.RIGHT :
-				if (paddle.x + 10 < stage.stageWidth - paddle.width)
+				if (paddleContainer.x + 10 < stage.stageWidth - paddle.width)
 				{
-					paddle.x +=  paddleSpeedIncrement;
+					paddleContainer.x +=  paddleSpeedIncrement;
 				}
 				break;
 
@@ -510,16 +530,16 @@ function paddleMove(event:KeyboardEvent):void
 		switch (event.keyCode)
 		{
 			case Keyboard.UP :
-				if (paddle.y > 0)
+				if (paddleContainer.y > 0)
 				{
-					paddle.y -=  paddleSpeedIncrement;
+					paddleContainer.y -=  paddleSpeedIncrement;
 				}
 				break;
 
 			case Keyboard.DOWN :
-				if (paddle.y + 10 < stage.stageHeight - paddle.height)
+				if (paddleContainer.y + 10 < stage.stageHeight - paddle.height)
 				{
-					paddle.y +=  paddleSpeedIncrement;
+					paddleContainer.y +=  paddleSpeedIncrement;
 				}
 				break;
 		}
@@ -546,54 +566,185 @@ function paddleMove(event:KeyboardEvent):void
 		stage.focus = paddle;
 	}
 }
-/*paddle.addEventListener(KeyboardEvent.KEY_DOWN,verticalMove);
-function verticalMove(event:KeyboardEvent):void
-{
-if (event.keyCode == Keyboard.UP)
-{
-if (paddle.y > -160)
-{
-paddle.y -=  20;
-}
-trace("width = " + paddle.width);
-trace("height = " + paddle.height);
-}
-if (event.keyCode == Keyboard.DOWN)
-{
-if (paddle.y + 180 < stage.stageHeight - paddle.width)
-{
-paddle.y +=  20;
-}
-}
-//pauses game
-if (event.keyCode == Keyboard.SPACE)
-{
-if (this.hasEventListener(Event.ENTER_FRAME) == true)
-{
-this.removeEventListener(Event.ENTER_FRAME, doEveryFrame);
-pausePosition = channel.position;
-channel.stop();
-gameContainer.addChild(pauseText);
-}
-else
-{
-this.addEventListener(Event.ENTER_FRAME, doEveryFrame);
-channel = gameSound.play(pausePosition);
-gameContainer.removeChild(pauseText);
-}
-stage.focus = paddle;
-}
-}*/
 
-//ball movement and interaction
+function paddleShift(event:KeyboardEvent):void
+{
+
+	if (event.keyCode > 52 || event.keyCode < 49)
+	{
+		return;
+	}
+
+
+
+	previousState = currentState;
+
+	var newx:int = 0;
+	var newy:int = 0;
+
+	//ceiling
+	if (event.keyCode == 50)
+	{
+		trace("2 was pressed");
+		currentState = CEILING;
+		newy = 25;
+		freezeField.y = 10;
+	}
+	//floor
+	if (event.keyCode == 52)
+	{
+		trace("4 was pressed");
+		currentState = FLOOR;
+		newy = 615;
+		freezeField.y = -1000;
+	}
+	//left wall
+	if (event.keyCode == 49)
+	{
+		trace("1 was pressed");
+		currentState = LEFT;
+		newx = 30;
+		freezeField.y = -1000;
+	}
+	//right wall
+	if (event.keyCode == 51)
+	{
+		trace("3 was pressed");
+		currentState = RIGHT;
+		newx = 980;
+		freezeField.y = 10;
+	}
+
+
+	if (currentState % 2 == 0)
+	{
+		paddleContainer.rotation = 0;
+	}
+	else
+	{
+		paddleContainer.rotation = 90;
+	}
+
+
+	var tempSum:int = previousState % 2 + currentState % 2;
+
+	//CEILING/FLOOR TO CEILING/FLOOR
+	if (tempSum==0)
+	{
+		trace("c/f->c/f");
+		paddleContainer.y = newy;
+
+		//WALL TO WALL
+	}
+	else if (tempSum==2)
+	{
+		trace("wall->wall");
+		paddleContainer.x = newx;
+	}
+
+
+	//wall to ceiling/floor
+	if (previousState%2==1 && currentState%2==0)
+	{
+		trace("wall->c/f");
+		paddleContainer.x = 410;
+		paddleContainer.y = newy;
+
+		//ceiling or floor to wall
+	}
+	else if (previousState%2==0 && currentState%2==1)
+	{
+		trace("c/f->wall");
+		paddleContainer.x = newx;
+		paddleContainer.y = 325;
+	}
+
+
+	debug(event);
+
+}
+
+
+
+
+//=========================H I T = T E S T S========================//
+function ballHitsPaddle()
+{
+	if (ball.hitTestObject(paddle))
+	{
+		hitSound.play();
+		hitCount++;
+		//ball movement increases on impact with paddle
+		if (currentState % 2 == 0)
+		{
+			yCircleAdd = yCircleAdd * -1;
+			xCircleAdd = xCircleAdd * 1;
+		}
+		else
+		{
+			yCircleAdd = yCircleAdd * 1;
+			xCircleAdd = xCircleAdd * -1;
+		}
+		scoreDisplay.text = "Score: " + hitCount.toString();
+	}
+}
+
+
+
+
+
+//=======================E V E R Y = F R A M E & T I M E R=======================//
+
+//time counts down by 1 every second;
+function updateTime(e:TimerEvent):void
+{
+	//timer counts down by 1
+	gameTime--;
+	gameTimeSec=gameTime/10;
+	//displays time on screen
+	timeDisplay.text = "Time : " + String(gameTimeSec);
+	
+	
+	unfreezeBall();
+	hideFreezeField();
+
+	
+	
+}
+
+function hideFreezeField():void{
+	if(gameTime < disappearTime){
+		
+		
+		if(paddleContainer.getChildByName("freezeField")){
+			trace("removing the freeze field");
+			paddleContainer.removeChild(freezeField);
+		}else{
+			trace("already removed breh");
+		}
+		
+	}
+	
+}
+
+function unfreezeBall():void{
+		if (gameTime < endFreeze)
+	{
+		//paddleContainer.removeChild(freezeField);
+		endFreeze = -1;
+		this.addEventListener(Event.ENTER_FRAME, doEveryFrame);
+	}
+}
+
 function doEveryFrame(event:Event):void
 {
 	//currentState = FLOOR;
-	gameTimer.start();	
+	gameTimer.start();
 	ball.x +=  xCircleAdd;
 	ball.y +=  yCircleAdd;
 
 	ballHitsPaddle();
+	ballFreeze();
 
 	//ball hits right wall
 	if (ball.x > stage.stageWidth - ball.width / 2)
@@ -678,6 +829,103 @@ function doEveryFrame(event:Event):void
 }
 
 
+
+
+
+
+
+
+//=========================S T A R T & S T O P==============================//
+
+
+
+function startGame(event:KeyboardEvent):void
+{
+	removeChild(greetingContainer);
+	addChild(gameContainer);
+	isHorizontal = false;
+	gameContainer.addChild(scoreDisplay);
+	gameContainer.addChild(timeDisplay);
+	stage.focus = paddle;
+	this.addEventListener(Event.ENTER_FRAME, doEveryFrame);
+	startLevel();
+}
+
+function restartGame(event:MouseEvent):void
+{
+	endGame.removeChild(endText);
+	endGame.removeChild(restartButton);
+	endGame.removeChild(restartButtonText);
+	endGame.removeChild(highScoreText);
+	channel = gameSound.play();
+	lostBallCount = 0;
+	hitCount = 0;
+	gameTime = levelDuration;
+	scoreDisplay.text = "Score: " + hitCount.toString();
+	addChild(gameContainer);
+	ball.y = 20;
+	ball.x = 20;
+	this.addEventListener(Event.ENTER_FRAME, doEveryFrame);
+	stage.focus = paddle;
+}
+function startLevel()
+{
+	if (currentLevel == 1)
+	{
+		addChild(gameContainer);
+		isHorizontal = false;
+		gameContainer.addChild(scoreDisplay);
+		gameContainer.addChild(timeDisplay);
+		lostBallCount = 0;
+		hitCount = 0;
+		gameTime = levelDuration;
+		scoreDisplay.text = "Score: " + hitCount.toString();
+		ball.y = 20;
+		ball.x = 20;
+		this.addEventListener(Event.ENTER_FRAME, doEveryFrame);
+		stage.focus = paddle;
+	}
+	else
+	{
+		removeChild(betweenLevelContainer);
+		yCircleAdd = yCircleAdd * -1.5;
+		xCircleAdd = xCircleAdd * 1.5;
+		addChild(gameContainer);
+		isHorizontal = false;
+		gameContainer.addChild(scoreDisplay);
+		gameContainer.addChild(timeDisplay);
+		lostBallCount = 0;
+		gameTime = levelDuration;
+		scoreDisplay.text = "Score: " + hitCount.toString();
+		ball.y = 20;
+		ball.x = 20;
+		this.addEventListener(Event.ENTER_FRAME, doEveryFrame);
+		paddleContainer.addEventListener(KeyboardEvent.KEY_DOWN,paddleMove);
+		stage.focus = paddle;
+		gameTimer.reset();
+	}
+
+}
+
+
+
+function timeExpired(e:TimerEvent):void
+{
+	
+	trace("time expired");
+	
+	//var gameTimer:Timer = e.target as Timer;
+	gameTimer.stop();
+	//gameTimer.removeEventListener(TimerEvent.TIMER, updateTime);
+	removeChild(gameContainer);
+	paddleContainer.removeEventListener(KeyboardEvent.KEY_DOWN,paddleMove);
+	this.removeEventListener(Event.ENTER_FRAME, doEveryFrame);
+	channel.stop();
+	addChild(betweenLevelContainer);
+	stage.focus = levelChangeText;
+	levelChangeText.setTextFormat(txtFormat);
+}
+
 //what happens  after ball hits bottom of screen 3 times
 function gameOver()
 {
@@ -721,242 +969,64 @@ function gameOver()
 	channel.stop();
 }
 
-function ballHitsPaddle()
+
+
+
+
+
+
+//===========================G R A P H I C S=======================//
+
+function freezeLoaded(event:Event):void
 {
-	if (ball.hitTestObject(paddle))
-	{
-		hitSound.play();
-		hitCount++;
-		//ball movement increases on impact with paddle
-		if (currentState % 2 == 0)
-		{
-			yCircleAdd = yCircleAdd * -1;
-			xCircleAdd = xCircleAdd * 1;
-		}
-		else
-		{
-			yCircleAdd = yCircleAdd * 1;
-			xCircleAdd = xCircleAdd * -1;
-		}
-		scoreDisplay.text = "Score: " + hitCount.toString();
-	}
+	trace("loaded");
+	freezeContainer.addChild(freezeLdr.content);
+	freezeContainer.scaleX = 90;
+	freezeContainer.scaleY = 10;
 }
 
-paddle.addEventListener(KeyboardEvent.KEY_DOWN, paddleShift);
-function paddleShift(event:KeyboardEvent):void
+
+
+//==========================O T H E R==============================//
+//converts input text into name that will be placed into nameArray;
+function inputFldChange(event:Event)
 {
-	/*
-	switch(event.keyCode){
-	case 50:
-	break;
-	case 49:
-	break;
-	case 52:
-	break;
-	case 51:
-	break;
-	}*/
-
-	if (event.keyCode > 52 || event.keyCode < 49)
-	{
-		return;
-	}
-
-
-
-	previousState = currentState;
-
-	var newx:int = 0;
-	var newy:int = 0;
-
-	//ceiling
-	if (event.keyCode == 50)
-	{
-		trace("2 was pressed");
-		currentState = CEILING;
-		newy = 25;
-	}
-	//floor
-	if (event.keyCode == 52)
-	{
-		trace("4 was pressed");
-		currentState = FLOOR;
-		newy = 615;
-	}
-	//left wall
-	if (event.keyCode == 49)
-	{
-		trace("1 was pressed");
-		currentState = LEFT;
-		newx = 30;
-	}
-	//right wall
-	if (event.keyCode == 51)
-	{
-		trace("3 was pressed");
-		currentState = RIGHT;
-		newx = 980;
-	}
-
-
-	if (currentState % 2 == 0)
-	{
-		paddle.rotation = 0;
-	}
-	else
-	{
-		paddle.rotation = 90;
-	}
-
-
-	var tempSum:int = previousState % 2 + currentState % 2;
-
-	//CEILING/FLOOR TO CEILING/FLOOR
-	if (tempSum==0)
-	{
-		trace("c/f->c/f");
-		paddle.y = newy;
-	
-	//WALL TO WALL
-	}
-	else if (tempSum==2)
-	{
-		trace("wall->wall");
-		paddle.x = newx;
-	}
-
-
-	//wall to ceiling/floor
-	if (previousState%2==1 && currentState%2==0)
-	{
-		trace("wall->c/f");
-		paddle.x = 410;
-		paddle.y = newy;
-	
-	//ceiling or floor to wall
-	}
-	else if (previousState%2==0 && currentState%2==1)
-	{
-		trace("c/f->wall");
-		paddle.x = newx;
-		paddle.y = 325;
-	}
-
-
-	debug(event);
-
-
-	/*else if (paddle. rotation == 0 && isHorizontal == false)
-	{
-	paddle.rotation = 90;
-	
-	}
-	else if (paddle.rotation == 90 && isHorizontal == true)
-	{
-	paddle.rotation = 0;
-	
-	}*/
-
-
-	/*
-	
-	trace("height is now " + paddle.height);
-	trace("width is now " + paddle.width);
-	trace("x is now " + paddle.x);
-	trace("y is now " + paddle.y);
-	trace("scaleX of gc is " + gameContainer.scaleX);
-	trace("scaleY of gc is " + gameContainer.scaleY);
-	trace("scaleX of paddle is " + paddle.scaleX);
-	trace("scaleY of paddle is " + paddle.scaleY);
-	*/
+	playerName = inputFld.text;
 }
-/*2 variable (1 current state, 1 previous state)
-const var LEFT:int = 0;
-const var TOP:int - 0;
-function for moving
-if previous state == LEFT && current state == FLOOR
 
-rotate function
-floor to left
-left to floor
-floor to right
-right to floor
-jump function
-left <-> right
-ceiling <-> floor
 
-const var LEFT:int = arbitrary number
-previous state - int
-current - state - int
-function for button pressing - call rotate or mirror
-switch statements
-ex: if press 1/2/3/4, then previous state = current state
-change current state in switch statement inside of each button (current state = LEFT, RIGHT, etc.)
-teleport function
-boolean if for each combination of previous and current
-for each boolean call either rotate or mirror function
-rotate function - changing horizontal to vert
-mirror - top to bottom or left to right
-
-*/
-function timeExpired(e:TimerEvent):void
+function onPlaybackComplete(event:Event)
 {
-	//var gameTimer:Timer = e.target as Timer;
-	gameTimer.stop();
-	//gameTimer.removeEventListener(TimerEvent.TIMER, updateTime);
-	removeChild(gameContainer);
-	paddle.removeEventListener(KeyboardEvent.KEY_DOWN,paddleMove);
-	this.removeEventListener(Event.ENTER_FRAME, doEveryFrame);
-	channel.stop();
-	addChild(betweenLevelContainer);
-	stage.focus = levelChangeText;
-	levelChangeText.setTextFormat(txtFormat);
+	trace("The sound has finished playing, play again.");
+	channel = gameSound.play();
 }
-function startLevel()
-{
-	if (currentLevel == 1)
-	{
-		addChild(gameContainer);
-		isHorizontal = false;
-		gameContainer.addChild(scoreDisplay);
-		gameContainer.addChild(timeDisplay);
-		lostBallCount = 0;
-		hitCount = 0;
-		gameTime = levelDuration;
-		scoreDisplay.text = "Score: " + hitCount.toString();
-		ball.y = 20;
-		ball.x = 20;
-		this.addEventListener(Event.ENTER_FRAME, doEveryFrame);
-		stage.focus = paddle;
-	}
-	else
-	{
-		removeChild(betweenLevelContainer);
-		yCircleAdd = yCircleAdd * -1.5;
-		xCircleAdd = xCircleAdd * 1.5;
-		addChild(gameContainer);
-		isHorizontal = false;
-		gameContainer.addChild(scoreDisplay);
-		gameContainer.addChild(timeDisplay);
-		lostBallCount = 0;
-		gameTime = levelDuration;
-		scoreDisplay.text = "Score: " + hitCount.toString();
-		ball.y = 20;
-		ball.x = 20;
-		this.addEventListener(Event.ENTER_FRAME, doEveryFrame);
-		paddle.addEventListener(KeyboardEvent.KEY_DOWN,paddleMove);
-		stage.focus = paddle;
-		gameTimer.reset();
-	}
-	
-}
-betweenLevelContainer.addChild(levelChangeText);
-betweenLevelContainer.addEventListener(KeyboardEvent.KEY_DOWN, betweenText);
+
 function betweenText(event:KeyboardEvent):void
 {
+	
+	
 	currentLevel++;
-	startLevel();
+	
+	
 	levelChangeText.text = "Level " + currentLevel.toString() + " is about to begin" +
 	"\nThe ball will now move faster" +
 	"\nPress any button to begin the level";
+
+
+	startLevel();
+	
+
+}
+
+
+function debug(event:KeyboardEvent)
+{
+	trace("\n\n************************\n");
+	trace("width = " + paddle.width);
+	trace("height = " + paddle.height);
+	trace("x = " + paddle.x);
+	trace("y = " + paddle.y);
+	trace("button = " + event.keyCode);
+	trace("previousState = " + previousState);
+	trace("currentState = " + currentState);
 }
