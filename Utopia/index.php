@@ -17,112 +17,275 @@ $facebook = new Facebook(array(
 <head>
 
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width" />
 	<meta charset="utf-8" />
-	
-	<title>Home</title>
 
-	<!-- Media Query 1 -->
-	<link href="css/phone.css" rel="stylesheet" type="text/css" media="only screen and (max-width:480px)" />
-	<!-- Media Query 2 -->
-	<link href="css/tablet.css" rel="stylesheet" type="text/css" media="only screen and (min-width:481px) and (max-width:768px)" />
-	<!-- Media Query 3 -->
-	<link href="css/desktop.css" rel="stylesheet" type="text/css" media="only screen and (min-width:769px)" />
+	<!-- bootstrap -->
+	<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="bootstrap/css/custom.css" rel="stylesheet">
+    <link rel="stylesheet" href="stately-master/assets/css/stately.css">
+    <script src="bootstrap/js/respond.js"></script>
+
+	<title>Home</title>
 
 </head>
 
 
 <body>
 
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=802007503148785";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
 <?php
 
+
+
 $user = $facebook->getUser();//get user from facebook object
-$user_id = 0;
+
+$user_id=0;
 
 if ($user): //check for existing user id
+		
+	$body_bg = e6f0df;
 
 	$user_graph = $facebook->api('/me/');
 
-	//$get_id_string = 'me/?fields=id';
-	//$user_id_graph = $facebook->api($get_id_string);
-
-	$user_id = $user_graph['id'];
-	$stuff = getUserInfo($user_id);
-
-	connect();
-
-
-
-
 	$user_travel_type_path = 'me/?fields=photos.fields(place),favorite_athletes,favorite_teams,religion,education,languages,political,books,television,music,movies,games,likes';
 	$travel_type_graph = $facebook->api($user_travel_type_path);
-
+	$user_id = $user_graph['id'];
+	
 	$user_profile = new User($travel_type_graph, $user_type);
 
-	echo '<div class="home_container">';
-	echo '<img src=http://utopia.mynmi.net/test/images/logo_app.png>';
-	echo '<h1>Hello, ',$user_graph['first_name'],'. Your travel type is ',$user_profile->get_type_as_string(), '.</h1>';
+	echo '
+    <div class="row">
+    	<nav class="navbar navbar-default navbar-fixed-top">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#collapse">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="glyphicon glyphicon-arrow-down"></span>
+                  MENU
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="http://utopia.mynmi.net/app"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+                    <li><a href="http://utopia.mynmi.net/app/profile.php?user_id='.$user_graph["id"].'"><span class="glyphicon glyphicon-user"></span> My Profile</a></li>
+                    <li><a href="http://utopia.mynmi.net/app/see_all_locations.php"><span class="glyphicon glyphicon-globe"></span> See All Locations</a></li>
+                </ul> 
+            </div>
+         </nav> 
+    </div>';
 
-	echo '<h2>Select a region below to narrow your travel search:</h2>';
+	echo '<div class="container">';
+	echo '<div class="row">
+			<center><h2>Hello, ',$user_graph['first_name'],'. Your travel type is <u>',
+			$user_profile->get_type_as_string(), '</u>
+			<sup><span class="glyphicon glyphicon-question-sign" data-toggle="tooltip" data-placement="right" title="Your travel type is calculated based on info pulled from your Facebook
+			profile. Info pulled includes movies, music, books, tv shows, games, and languages."></span></sup>
+			.</h2></center>
+		  </div>';
+	echo '<div class="row">
+				<center><div class="logo"></div></center>
+		</div>';
+	echo '<div class="row">
+			<center><h4>Select a region below to narrow your travel search:</h4></center>
+		</div>';
 
 generate_region_buttons($user_profile->user_type);
 
 	echo
-	'<div id="logout_container">
-		<a href="logout.php">
-			<div id="logout">
-				log out
-			</div>
+	'<div class="row">
+			<center>
+				<a href="logout.php">
+					<div class="btn btn-lg btn-logout">
+						log out
+					</div>
+				</a>
+			</center>
 		</a>
 	</div>';//print logout link
 
 else: //user doesn't exist
+
+	$body_bg = e6f0df;
+
 	$loginUrl = $facebook->getLoginUrl(array(
 		'diplay'=>'popup',
-		'scope'=>'email, friends_likes',
-		'redirect_uri' => 'http://utopia.mynmi.net/test/'
+		'scope'=>'basic_info, user_about_me, user_likes',
+		'redirect_uri' => 'http://utopia.mynmi.net/app/'
 	));
-	echo '<div class="notes">';
-	echo '<p>In order for us to determine your travel type, please <a href="', $loginUrl, '" target="_top">login</a>.</p>';
-	echo '</div>';
+	echo '<center>
+			<div class="container" id="login_container">
+				<div class="row">
+					<div class="col-xs-8 col-xs-offset-2" id="login">
+							<p><h3>In order for us to determine your travel type, please:</h3>
+								<br>
+								<a href="', $loginUrl, '" target="_top">
+									<div class="row">
+											<div class="btn btn-lg">
+												<strong>login</strong>
+											</div>
+									</div>
+								</a>
+							</p>
+					</div>
+				</div>
+			</div>
+		</center>';
 endif; //check for user id
 
 function generate_region_buttons($user_type){
 	global $user_id;
 	$user_type_url = "&user_type=".$user_type."&user_id=".$user_id;
 
-	echo "<div class='region_button_container'>
-
-	<a href='http://utopia.mynmi.net/test/location_template.php?region=".WEST.$user_type_url."'>
-	<div class='West'>
-		West
-	</div>
-	</a>
-
-	<a href='http://utopia.mynmi.net/test/location_template.php?region=".MIDWEST.$user_type_url."'>
-		<div class='Midwest'>
-			Midwest
+	echo "<div class='row'>
+			<center>
+				<div class='hidden-xs'>
+					<ul id='plain' class='stately'> 
+					    <li data-state='al' class='al'>A</li>
+					    <li data-state='ak' class='ak'>B</li>
+					    <li data-state='ar' class='ar'>C</li>						
+					    <li data-state='az' class='az'>D</li>
+					    <li data-state='ca' class='ca'>E</li>
+					    <li data-state='co' class='co'>F</li>
+					    <li data-state='ct' class='ct'>G</li>
+					    <li data-state='de' class='de'>H</li>
+					    <li data-state='dc' class='dc'>I</li>
+					    <li data-state='fl' class='fl'>J</li>
+					    <li data-state='ga' class='ga'>K</li>
+					    <li data-state='hi' class='hi'>L</li>
+					    <li data-state='id' class='id'>M</li>
+					    <li data-state='il' class='il'>N</li>
+					    <li data-state='in' class='in'>O</li>
+					    <li data-state='ia' class='ia'>P</li>
+					    <li data-state='ks' class='ks'>Q</li>
+					    <li data-state='ky' class='ky'>R</li>
+					    <li data-state='la' class='la'>S</li>
+					    <li data-state='me' class='me'>T</li>
+					    <li data-state='md' class='md'>U</li>
+					    <li data-state='ma' class='ma'>V</li>
+					    <li data-state='mi' class='mi'>W</li>
+					    <li data-state='mn' class='mn'>X</li>
+					    <li data-state='ms' class='ms'>Y</li>
+					    <li data-state='mo' class='mo'>Z</li>
+					    <li data-state='mt' class='mt'>a</li>
+					    <li data-state='ne' class='ne'>b</li>
+					    <li data-state='nv' class='nv'>c</li>
+					    <li data-state='nh' class='nh'>d</li>
+					    <li data-state='nj' class='nj'>e</li>
+					    <li data-state='nm' class='nm'>f</li>
+					    <li data-state='ny' class='ny'>g</li>
+					    <li data-state='nc' class='nc'>h</li>
+					    <li data-state='nd' class='nd'>i</li>
+					    <li data-state='oh' class='oh'>j</li>			
+					    <li data-state='ok' class='ok'>k</li>
+					    <li data-state='or' class='or'>l</li>
+					    <li data-state='pa' class='pa'>m</li>
+					    <li data-state='ri' class='ri'>n</li>
+					    <li data-state='sc' class='sc'>o</li>
+					    <li data-state='sd' class='sd'>p</li>
+					    <li data-state='tn' class='tn'>q</li>
+					    <li data-state='tx' class='tx'>r</li>
+					    <li data-state='ut' class='ut'>s</li>
+					    <li data-state='va' class='va'>t</li>
+					    <li data-state='vt' class='vt'>u</li>			
+					    <li data-state='wa' class='wa'>v</li>
+					    <li data-state='wv' class='wv'>w</li>
+					    <li data-state='wi' class='wi'>x</li>
+					    <li data-state='wy' class='wy'>y</li>
+					</ul>
+				</div>
+			</center>
 		</div>
-	</a>
+		<div class='row'>
+			<div class='col-sm-3'>
+				<a href='http://utopia.mynmi.net/app/location_template.php?region=".WEST.$user_type_url."'>
+				<div class='btn btn-lg btn-block' id='west_button'>
+					West
+				</div>
+				</a>
+			</div>
 
-	<a href='http://utopia.mynmi.net/test/location_template.php?region=".NORTHEAST.$user_type_url."'>
-		<div class='Northeast'>
-			Northeast
-		</div>
-	</a>
+			<div class='col-sm-3'>
+				<a href='http://utopia.mynmi.net/app/location_template.php?region=".MIDWEST.$user_type_url."'>
+					<div class='btn btn-lg btn-block' id='mw_button'>
+						Midwest
+					</div>
+				</a>
+			</div>
 
-	<a href='http://utopia.mynmi.net/test/location_template.php?region=".SOUTHEAST.$user_type_url."'>
-		<div class='Southeast'>
-			Southeast
+			<div class='col-sm-3'>
+				<a href='http://utopia.mynmi.net/app/location_template.php?region=".NORTHEAST.$user_type_url."'>
+					<div class='btn btn-lg btn-block' id='ne_button'>
+						Northeast
+					</div>
+				</a>
+			</div>
+
+			<div class='col-sm-3'>
+				<a href='http://utopia.mynmi.net/app/location_template.php?region=".SOUTHEAST.$user_type_url."'>
+					<div class='btn btn-lg btn-block' id='se_button'>
+						Southeast
+					</div>
+				</a>
+			</div>
 		</div>
-	</a>
-	</div>";
+
+			";
 }
 
 echo '</div>';
 
 ?>
 
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script>
+		$('span').tooltip()
+	</script>
+	
+	    <script>
+
+		$(function() {
+		     $('#west_button').hover(
+		         function () {
+		            $('.stately').attr('id', 'west');         
+		         }
+		    );
+		});
+
+		$(function() {
+		     $('#mw_button').hover(
+		         function () {
+		            $('.stately').attr('id', 'midwest');         
+		         }
+		    );
+		});
+		
+		$(function() {
+		     $('#ne_button').hover(
+		         function () {
+		            $('.stately').attr('id', 'northeast');         
+		         }
+		    );
+		});
+		
+		$(function() {
+		     $('#se_button').hover(
+		         function () {
+		            $('.stately').attr('id', 'southeast');         
+		         }
+		    );
+		});
+
+		</script>
 
 
 </body>
