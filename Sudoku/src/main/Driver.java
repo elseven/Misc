@@ -9,7 +9,7 @@ import datastructures.Puzzle;
 
 public class Driver {
 
-	private static int puzzleIndex = 3;
+	private static int puzzleIndex = 0;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

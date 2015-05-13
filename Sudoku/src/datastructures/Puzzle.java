@@ -2,6 +2,7 @@ package datastructures;
 
 public class Puzzle {
 	public Cell[][] cells = new Cell[9][9];
+	public static boolean changed = false;
 
 	public Puzzle(String input) {
 		for (int i = 0; i < 81; i++) {
@@ -20,9 +21,14 @@ public class Puzzle {
 
 		boolean puzzleSolved = false;
 		int loops = 0;
-
-		while (!puzzleSolved && loops < 100) {
+		// int solved = getNumberSolved();
+		// int prevSolved = 0;
+		// while (!puzzleSolved && loops < 100 && (solved != prevSolved)) {
+		changed = true;
+		while (!puzzleSolved && changed && loops < 10000) {
+			changed = false;
 			puzzleSolved = true;
+			// solved = getNumberSolved();
 			// System.out.println("**************************************");
 			/*
 			 * if (update()) { break; }
@@ -32,6 +38,8 @@ public class Puzzle {
 				puzzleSolved = puzzleSolved && temp;
 			}
 			loops++;
+			// prevSolved = solved;
+			// solved = getNumberSolved();
 		}
 
 		update();

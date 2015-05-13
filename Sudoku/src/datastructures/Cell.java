@@ -101,6 +101,7 @@ public class Cell {
 					int tempIndex = this.possibleSolutions
 							.indexOf(puzzle.cells[row][i].answer);
 					this.possibleSolutions.remove(tempIndex);
+					Puzzle.changed = true;
 				}
 			}
 		}
@@ -113,6 +114,7 @@ public class Cell {
 					int tempIndex = this.possibleSolutions
 							.indexOf(puzzle.cells[i][column].answer);
 					this.possibleSolutions.remove(tempIndex);
+					Puzzle.changed = true;
 				}
 			}
 		}
@@ -128,6 +130,7 @@ public class Cell {
 						int tempIndex = this.possibleSolutions
 								.indexOf(puzzle.cells[tempRow][tempColumn].answer);
 						this.possibleSolutions.remove(tempIndex);
+						Puzzle.changed = true;
 					}
 				}
 
@@ -206,6 +209,7 @@ public class Cell {
 					int tempIndex = uniquePossibleSolutions.indexOf(sol);
 					if (tempIndex >= 0) {
 						uniquePossibleSolutions.remove(tempIndex);
+						Puzzle.changed = true;
 					}
 				}
 
@@ -227,6 +231,7 @@ public class Cell {
 						int tempIndex = uniquePossibleSolutions.indexOf(sol);
 						if (tempIndex >= 0) {
 							uniquePossibleSolutions.remove(tempIndex);
+							Puzzle.changed = true;
 						}
 					}
 				}
@@ -270,6 +275,7 @@ public class Cell {
 					int tempIndex = uniquePossibleSolutions.indexOf(sol);
 					if (tempIndex >= 0) {
 						uniquePossibleSolutions.remove(tempIndex);
+						Puzzle.changed = true;
 					}
 				}
 
@@ -311,6 +317,7 @@ public class Cell {
 					int tempIndex = uniquePossibleSolutions.indexOf(sol);
 					if (tempIndex >= 0) {
 						uniquePossibleSolutions.remove(tempIndex);
+						Puzzle.changed = true;
 					}
 				}
 
@@ -354,6 +361,7 @@ public class Cell {
 						int tempIndex = uniquePossibleSolutions.indexOf(sol);
 						if (tempIndex >= 0) {
 							uniquePossibleSolutions.remove(tempIndex);
+							Puzzle.changed = true;
 						}
 					}
 				}
@@ -374,7 +382,7 @@ public class Cell {
 		if (isSolved) {
 			s += answer;
 		} else {
-			s += "?";
+			s += "*";
 		}
 		return s;
 	}
