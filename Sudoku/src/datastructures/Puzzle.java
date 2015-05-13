@@ -9,6 +9,13 @@ public class Puzzle {
 		}
 	}
 
+	public void printPossibleStuff() {
+		for (int i = 0; i < 81; i++) {
+
+			System.out.println(cells[i / 9][i % 9].getPossibleStuff(this));
+		}
+	}
+
 	public void solve() {
 
 		boolean puzzleSolved = false;
@@ -17,12 +24,11 @@ public class Puzzle {
 		while (!puzzleSolved && loops < 100) {
 			puzzleSolved = true;
 			// System.out.println("**************************************");
-			if (update()) {
-				break;
-			}
+			/*
+			 * if (update()) { break; }
+			 */
 			for (int i = 0; i < 81; i++) {
-				boolean temp = cells[i / 9][i % 9]
-						.possibleSolutionsOverlapUpdate(this);
+				boolean temp = cells[i / 9][i % 9].update(this);
 				puzzleSolved = puzzleSolved && temp;
 			}
 			loops++;
@@ -40,7 +46,6 @@ public class Puzzle {
 		for (int i = 0; i < 81; i++) {
 			int row = i / 9;
 			int column = i % 9;
-			// System.out.println(row+","+column);
 			boolean temp = this.cells[row][column].basicUpdate(this);
 			puzzleSolved = puzzleSolved && temp;
 		}

@@ -71,15 +71,15 @@ public class Cell {
 		return square;
 	}
 
-	public void printPossibleStuff(Puzzle puzzle) {
+	public String getPossibleStuff(Puzzle puzzle) {
 		int row = getRow(index);
 		int column = getColumn(index);
 		int square = getSquare(index);
-		System.out.print("(" + row + "," + column + "," + square + ")\t");
+		String s = "(" + row + "," + column + "," + square + ")\t";
 		for (Integer sol : possibleSolutions) {
-			System.out.print(sol + " ");
+			s += sol + " ";
 		}
-		System.out.println();
+		return s;
 	}
 
 	public boolean basicUpdate(Puzzle puzzle) {
@@ -144,7 +144,7 @@ public class Cell {
 
 	}
 
-	public boolean possibleSolutionsOverlapUpdate(Puzzle puzzle) {
+	public boolean update(Puzzle puzzle) {
 
 		basicUpdate(puzzle);
 		rowOverlap(puzzle);
