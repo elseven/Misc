@@ -1,11 +1,16 @@
 package datastructures;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Puzzle {
 	public Cell[][] cells = new Cell[9][9];
+
 	public static boolean changed = false;
 	public static Puzzle backupPuzzle = null;
+	public static int guessCellIndex = -1;
+	public static int guessAnswer = -1;
+	public static HashMap<Integer, ArrayList<Integer>> failedGuesses = new HashMap<Integer, ArrayList<Integer>>();
 
 	public Puzzle(Puzzle other) {
 		this.cells = other.cells.clone();
@@ -30,41 +35,73 @@ public class Puzzle {
 	public void solve() {
 
 		if (!checkValid()) {
-			System.err.println("INVALID!!!!");
+			return;
 		}
 		boolean puzzleSolved = false;
 		int loops = 0;
-		// int solved = getNumberSolved();
-		// int prevSolved = 0;
-		// while (!puzzleSolved && loops < 100 && (solved != prevSolved)) {
+
 		changed = true;
 		while (!puzzleSolved && changed && loops < 10000) {
 			changed = false;
 			puzzleSolved = true;
-			// solved = getNumberSolved();
-			// System.out.println("**************************************");
-			/*
-			 * if (update()) { break; }
-			 */
+
 			for (int i = 0; i < 81; i++) {
 				boolean temp = cells[i / 9][i % 9].update(this);
 				puzzleSolved = puzzleSolved && temp;
 			}
 			loops++;
-			// prevSolved = solved;
-			// solved = getNumberSolved();
+
 		}
 		System.err.println("SOLVED? " + puzzleSolved + "(loops:" + loops + ")");
+
+		if (!checkValid()) {
+			System.err.println("REVERTING");
+			this.cells = backupPuzzle.cells.clone();
+			if (failedGuesses.containsKey(guessCellIndex)) {
+				failedGuesses.get(guessCellIndex).add(guessAnswer);
+			} else {
+				ArrayList<Integer> tempValues = new ArrayList<Integer>();
+				tempValues.add(guessAnswer);
+				failedGuesses.put(guessCellIndex, tempValues);
+			}
+			int column = Cell.getColumn(guessCellIndex);
+			int row = Cell.getRow(guessCellIndex);
+			this.cells[row][column].excludeSolution(guessAnswer);
+		}
 		if (!puzzleSolved) {
-
 			guess();
-
 		}
 
 	}
 
 	public void guess() {
+		System.err.println("GUESSING");
+
 		backupPuzzle = new Puzzle(this);
+
+		ArrayList<Integer> almostIndices = getAlmostSolvedIndices(2);
+		for (int i = 0; i < almostIndices.size(); i++) {
+			int index = almostIndices.get(i);
+			int row = Cell.getRow(index);
+			int column = Cell.getColumn(index);
+			Cell temp = cells[row][column];
+			guessCellIndex = index;
+			for (int j = 0; j < temp.getPossibleSolutions().size(); j++) {
+
+				guessAnswer = temp.getPossibleSolutions().get(j);
+				if (failedGuesses.containsKey(guessCellIndex)
+						&& failedGuesses.get(guessCellIndex).contains(
+								guessAnswer)) {
+					continue;
+				}
+
+				cells[row][column].setAnswer(guessAnswer);
+
+				solve();
+
+			}
+
+		}
 
 	}
 
@@ -100,14 +137,26 @@ public class Puzzle {
 	private ArrayList<Integer> getAlmostSolvedIndices(int maxSolutions) {
 		ArrayList<Integer> almost = new ArrayList<Integer>();
 
+		for (int i = 0; i < 81; i++) {
+			int row = Cell.getRow(i);
+			int column = Cell.getColumn(i);
+			Cell temp = cells[row][column];
+			if (!temp.getIsSolved()) {
+				if (temp.getPossibleSolutions().size() <= maxSolutions) {
+					almost.add(i);
+				}
+
+			}
+		}
+
 		return almost;
 	}
 
 	public int getNumberSolved() {
 		int count = 0;
 		for (int i = 0; i < 81; i++) {
-			int row = i / 9;
-			int column = i % 9;
+			int row = Cell.getRow(i);
+			int column = Cell.getColumn(i);
 			// System.out.println(row+","+column);
 			if (this.cells[row][column].getIsSolved()) {
 				count++;

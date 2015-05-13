@@ -30,6 +30,24 @@ public class Cell {
 		return index;
 	}
 
+	public void setAnswer(int answer) {
+		this.answer = answer;
+		isSolved = true;
+		possibleSolutions.clear();
+
+	}
+
+	// TODO: USED THIS!!!!
+	public void excludeSolution(int toExclude) {
+
+		int tempIndex = this.possibleSolutions.indexOf(toExclude);
+		if (tempIndex >= 0) {
+			this.possibleSolutions.remove(tempIndex);
+			Puzzle.changed = true;
+		}
+
+	}
+
 	public ArrayList<Integer> getPossibleSolutions() {
 		ArrayList<Integer> tempSoln = new ArrayList<Integer>();
 		for (Integer soln : possibleSolutions) {
@@ -45,9 +63,8 @@ public class Cell {
 		// answer is ans
 		if (ans != 46) {
 			this.index = index;
-			isSolved = true;
-			possibleSolutions.clear();
-			answer = ans - 48;
+
+			this.setAnswer(ans - 48);
 		}
 
 	}
