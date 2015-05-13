@@ -22,11 +22,12 @@ public class Driver {
 		Puzzle puzzle = new Puzzle(input.substring(0, 81));
 		
 		System.out.println(puzzle);
+		System.out.println("Originally solved: " + puzzle.getNumberSolved());
 		
 		puzzle.solve();
 		System.out.println("**********************************");
 		System.out.println(puzzle);
-		
+		System.out.println("Solved: " + puzzle.getNumberSolved());
 		
 		
 
