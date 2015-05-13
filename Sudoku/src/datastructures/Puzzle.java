@@ -1,8 +1,15 @@
 package datastructures;
 
+import java.util.ArrayList;
+
 public class Puzzle {
 	public Cell[][] cells = new Cell[9][9];
 	public static boolean changed = false;
+	public static Puzzle backupPuzzle = null;
+
+	public Puzzle(Puzzle other) {
+		this.cells = other.cells.clone();
+	}
 
 	public Puzzle(String input) {
 		for (int i = 0; i < 81; i++) {
@@ -12,13 +19,19 @@ public class Puzzle {
 
 	public void printPossibleStuff() {
 		for (int i = 0; i < 81; i++) {
+			Cell temp = cells[i / 9][i % 9];
+			if (!temp.getIsSolved()) {
+				System.out.println(temp.getPossibleStuff(this));
+			}
 
-			System.out.println(cells[i / 9][i % 9].getPossibleStuff(this));
 		}
 	}
 
 	public void solve() {
 
+		if (!checkValid()) {
+			System.err.println("INVALID!!!!");
+		}
 		boolean puzzleSolved = false;
 		int loops = 0;
 		// int solved = getNumberSolved();
@@ -41,23 +54,67 @@ public class Puzzle {
 			// prevSolved = solved;
 			// solved = getNumberSolved();
 		}
-
-		// update();
-
 		System.err.println("SOLVED? " + puzzleSolved + "(loops:" + loops + ")");
+		if (!puzzleSolved) {
+
+			guess();
+
+		}
 
 	}
 
-	private boolean update() {
-		boolean puzzleSolved = true;
+	public void guess() {
+		backupPuzzle = new Puzzle(this);
 
+	}
+
+	public boolean checkValid() {
+		boolean isValid = true;
+
+		int[][] countsRow = new int[9][9];
+		int[][] countsColumn = new int[9][9];
+		int[][] countsSquare = new int[9][9];
+
+		for (int i = 0; i < 81; i++) {
+
+			int row = Cell.getRow(i);
+			int column = Cell.getColumn(i);
+			int square = Cell.getSquare(i);
+			Cell tempCell = cells[row][column];
+			if (tempCell.getIsSolved()) {
+				int answer = tempCell.getAnswer() - 1;
+				countsRow[row][answer]++;
+				countsColumn[column][answer]++;
+				countsSquare[square][answer]++;
+				if (countsRow[row][answer] > 1
+						|| countsColumn[column][answer] > 1
+						|| countsSquare[square][answer] > 1) {
+					isValid = false;
+					break;
+				}
+			}
+		}
+		return isValid;
+	}
+
+	private ArrayList<Integer> getAlmostSolvedIndices(int maxSolutions) {
+		ArrayList<Integer> almost = new ArrayList<Integer>();
+
+		return almost;
+	}
+
+	public int getNumberSolved() {
+		int count = 0;
 		for (int i = 0; i < 81; i++) {
 			int row = i / 9;
 			int column = i % 9;
-			boolean temp = this.cells[row][column].basicUpdate(this);
-			puzzleSolved = puzzleSolved && temp;
+			// System.out.println(row+","+column);
+			if (this.cells[row][column].getIsSolved()) {
+				count++;
+			}
 		}
-		return puzzleSolved;
+		return count;
+
 	}
 
 	@Override
@@ -76,20 +133,6 @@ public class Puzzle {
 			}
 		}
 		return s;
-	}
-
-	public int getNumberSolved() {
-		int count = 0;
-		for (int i = 0; i < 81; i++) {
-			int row = i / 9;
-			int column = i % 9;
-			// System.out.println(row+","+column);
-			if (this.cells[row][column].getIsSolved()) {
-				count++;
-			}
-		}
-		return count;
-
 	}
 
 }

@@ -63,8 +63,8 @@ public class Cell {
 	}
 
 	public static int getSquare(int index) {
-		int row = index / 9;
-		int column = index % 9;
+		int row = getRow(index);
+		int column = getColumn(index);
 		int square = (column / 3);
 		square *= 3;
 		square += (row / 3);
@@ -304,6 +304,7 @@ public class Cell {
 		for (Integer sol : possibleSolutions) {
 			uniquePossibleSolutions.add(sol);
 		}
+
 		// for each cell in the same row
 		for (int i = 0; i < 9; i++) {
 			// if the other cell is not solved, compare the possible solutions
@@ -312,10 +313,17 @@ public class Cell {
 			}
 			other = puzzle.cells[row][i];
 			if (!other.isSolved) {
+				if (index == 25) {
+					System.out.println(row + "," + i + "\t"
+							+ other.possibleSolutions);
+				}
 				for (Integer sol : other.possibleSolutions) {
 					int tempIndex = uniquePossibleSolutions.indexOf(sol);
+
 					if (tempIndex >= 0) {
+
 						uniquePossibleSolutions.remove(tempIndex);
+
 					}
 				}
 
