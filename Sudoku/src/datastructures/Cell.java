@@ -209,7 +209,6 @@ public class Cell {
 					int tempIndex = uniquePossibleSolutions.indexOf(sol);
 					if (tempIndex >= 0) {
 						uniquePossibleSolutions.remove(tempIndex);
-						Puzzle.changed = true;
 					}
 				}
 
@@ -231,7 +230,6 @@ public class Cell {
 						int tempIndex = uniquePossibleSolutions.indexOf(sol);
 						if (tempIndex >= 0) {
 							uniquePossibleSolutions.remove(tempIndex);
-							Puzzle.changed = true;
 						}
 					}
 				}
@@ -239,6 +237,7 @@ public class Cell {
 		}
 
 		if (uniquePossibleSolutions.size() == 1) {
+			Puzzle.changed = true;
 			this.answer = uniquePossibleSolutions.get(0);
 			possibleSolutions.clear();
 			this.isSolved = true;
@@ -275,7 +274,6 @@ public class Cell {
 					int tempIndex = uniquePossibleSolutions.indexOf(sol);
 					if (tempIndex >= 0) {
 						uniquePossibleSolutions.remove(tempIndex);
-						Puzzle.changed = true;
 					}
 				}
 
@@ -284,6 +282,7 @@ public class Cell {
 		}
 
 		if (uniquePossibleSolutions.size() == 1) {
+			Puzzle.changed = true;
 			this.answer = uniquePossibleSolutions.get(0);
 			possibleSolutions.clear();
 			this.isSolved = true;
@@ -317,7 +316,6 @@ public class Cell {
 					int tempIndex = uniquePossibleSolutions.indexOf(sol);
 					if (tempIndex >= 0) {
 						uniquePossibleSolutions.remove(tempIndex);
-						Puzzle.changed = true;
 					}
 				}
 
@@ -325,6 +323,7 @@ public class Cell {
 		}
 
 		if (uniquePossibleSolutions.size() == 1) {
+			Puzzle.changed = true;
 			this.answer = uniquePossibleSolutions.get(0);
 			possibleSolutions.clear();
 			this.isSolved = true;
@@ -361,7 +360,6 @@ public class Cell {
 						int tempIndex = uniquePossibleSolutions.indexOf(sol);
 						if (tempIndex >= 0) {
 							uniquePossibleSolutions.remove(tempIndex);
-							Puzzle.changed = true;
 						}
 					}
 				}
@@ -369,6 +367,7 @@ public class Cell {
 		}
 
 		if (uniquePossibleSolutions.size() == 1) {
+			Puzzle.changed = true;
 			this.answer = uniquePossibleSolutions.get(0);
 			possibleSolutions.clear();
 			this.isSolved = true;

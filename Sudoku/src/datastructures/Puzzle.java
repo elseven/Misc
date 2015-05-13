@@ -42,7 +42,7 @@ public class Puzzle {
 			// solved = getNumberSolved();
 		}
 
-		update();
+		// update();
 
 		System.err.println("SOLVED? " + puzzleSolved + "(loops:" + loops + ")");
 
