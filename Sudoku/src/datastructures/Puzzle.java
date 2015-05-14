@@ -46,7 +46,7 @@ public class Puzzle {
 		backupPuzzle = new Puzzle(this);
 
 		// TODO: CHANGE TO 81
-		while (this.getNumberSolved() < 78) {
+		while (this.getNumberSolved() < 81) {
 			solve();
 
 			System.out.println("Solved: " + this.getNumberSolved());
@@ -59,10 +59,17 @@ public class Puzzle {
 				guess();
 			}
 		}
+		System.out
+				.println("******************************************************");
+		System.out
+				.println("**********************ANSWER:*************************");
+		System.out
+				.println("******************************************************");
+		System.out.println(this);
 	}
 
 	public void solve() {
-		System.out.println("**********************************");
+		System.out.println("*************SOLVING*********************");
 		System.out.println(this);
 		System.out.println("Possible: ");
 		this.printPossibleStuff();
@@ -84,6 +91,7 @@ public class Puzzle {
 		if (!guessingHasStarted) {
 			backupPuzzle = new Puzzle(this);
 		}
+		System.out.println("solved: " + getNumberSolved());
 
 	}
 
@@ -117,16 +125,16 @@ public class Puzzle {
 			int row = Cell.getRow(index);
 			int column = Cell.getColumn(index);
 			Cell tempCell = cells[row][column];
-			System.out.println("***" + row + "," + column + "***");
+			// System.out.println("***" + "***");
 
 			ArrayList<Integer> possibleAnswers = new ArrayList<Integer>();
 			for (Integer p : tempCell.getPossibleSolutions()) {
 				possibleAnswers.add(p);
 			}
 
-			System.out.println("&&&" + possibleAnswers + "&&&");
 			for (Integer possible : possibleAnswers) {
-				System.out.println(">>>" + possible + "<<<");
+				System.out.println("&&&" + row + "," + column + "\t"
+						+ possibleAnswers + "&&&" + ">>>" + possible + "<<<");
 
 				// TODO: SKIP IF ALREADY IN GUESSES
 				if (hasBeenGuessed(index, possible)) {
@@ -239,7 +247,7 @@ public class Puzzle {
 			}
 			s += "\n";
 			if (i % 3 == 2) {
-				s += "---------------------------\n";
+				s += "\n";
 			}
 		}
 		return s;
