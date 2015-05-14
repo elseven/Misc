@@ -11,7 +11,7 @@ public class Puzzle {
 	public static int guessCellIndex = -1;
 	public static int guessAnswer = -1;
 	public static boolean guessingHasStarted = false;
-	public static HashMap<Integer, ArrayList<Integer>> successfulGuesses = new HashMap<Integer, ArrayList<Integer>>();
+	public static HashMap<Integer, ArrayList<Integer>> badGuesses = new HashMap<Integer, ArrayList<Integer>>();
 	public static HashMap<Integer, ArrayList<Integer>> currentGuesses = new HashMap<Integer, ArrayList<Integer>>();
 	public static int guessCount = 0;
 	private static boolean puzzleSolved = false;
@@ -71,8 +71,8 @@ public class Puzzle {
 	public void solve() {
 		System.out.println("*************SOLVING*********************");
 		System.out.println(this);
-		System.out.println("Possible: ");
-		this.printPossibleStuff();
+		// System.out.println("Possible: ");
+		// this.printPossibleStuff();
 
 		puzzleSolved = false;
 		int loops = 0;
@@ -95,6 +95,28 @@ public class Puzzle {
 
 	}
 
+	private void addBadGuess(int index, int ans) {
+
+		if (badGuesses.containsKey(index)) {
+			if (!badGuesses.get(index).contains(ans)) {
+				badGuesses.get(index).add(ans);
+			}
+		} else {
+
+			ArrayList<Integer> temp = new ArrayList<Integer>();
+			temp.add(ans);
+			badGuesses.put(index, temp);
+		}
+
+	}
+
+	private boolean isBadGuess(int index, int ans) {
+
+		return badGuesses.containsKey(index)
+				&& (badGuesses.get(index).contains(ans));
+
+	}
+
 	private boolean hasBeenGuessed(int index, int ans) {
 		boolean exhausted = false;
 
@@ -109,6 +131,9 @@ public class Puzzle {
 			ArrayList<Integer> temp = new ArrayList<Integer>();
 			temp.add(ans);
 			currentGuesses.put(index, temp);
+		}
+		if (isBadGuess(index, ans)) {
+			exhausted = true;
 		}
 
 		return exhausted;
@@ -159,6 +184,10 @@ public class Puzzle {
 	private void revert() {
 		System.err.println("REVERTING");
 		this.copyPuzzle(backupPuzzle);
+		// TODO: FIGURE OUT HOW TO KEEP TRACK OF BAD GUESSES?
+		// MOST RECENT? FIRST AFTER REVERT?
+		// addBadGuess()
+		currentGuesses.clear();
 	}
 
 	public boolean checkValid() {
