@@ -10,6 +10,15 @@ public class Cell {
 	private ArrayList<Integer> possibleSolutions = new ArrayList<>();
 	private int index = -1;
 
+	public Cell(Cell other) {
+		this.isSolved = other.getIsSolved();
+		this.answer = other.getAnswer();
+		for (int i = 0; i < other.getPossibleSolutions().size(); i++) {
+			this.possibleSolutions.add(other.getPossibleSolutions().get(i));
+		}
+		this.index = other.getIndex();
+	}
+
 	public Cell(int index) {
 		this.index = index;
 		possibleSolutions.clear();
@@ -49,11 +58,7 @@ public class Cell {
 	}
 
 	public ArrayList<Integer> getPossibleSolutions() {
-		ArrayList<Integer> tempSoln = new ArrayList<Integer>();
-		for (Integer soln : possibleSolutions) {
-			tempSoln.add(soln);
-		}
-		return tempSoln;
+		return possibleSolutions;
 	}
 
 	public Cell(int index, int ans) {
@@ -95,6 +100,9 @@ public class Cell {
 		String s = "(" + row + "," + column + "," + square + ")\t";
 		for (Integer sol : possibleSolutions) {
 			s += sol + " ";
+		}
+		if (possibleSolutions.isEmpty()) {
+			s += "ERROR!!!!";
 		}
 		return s;
 	}
@@ -330,10 +338,7 @@ public class Cell {
 			}
 			other = puzzle.cells[row][i];
 			if (!other.isSolved) {
-				if (index == 25) {
-					System.out.println(row + "," + i + "\t"
-							+ other.possibleSolutions);
-				}
+
 				for (Integer sol : other.possibleSolutions) {
 					int tempIndex = uniquePossibleSolutions.indexOf(sol);
 

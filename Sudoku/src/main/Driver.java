@@ -28,12 +28,7 @@ public class Driver {
 
 		System.out.println(puzzle);
 		System.out.println("Originally solved: " + puzzle.getNumberSolved());
-
-		puzzle.solve();
-		System.out.println("**********************************");
-		System.out.println(puzzle);
-		System.out.println("Solved: " + puzzle.getNumberSolved());
-		puzzle.printPossibleStuff();
+		puzzle.run();
 
 	}
 
