@@ -91,7 +91,7 @@ public class Puzzle {
 		if (!guessingHasStarted) {
 			backupPuzzle = new Puzzle(this);
 		}
-		System.out.println("solved: " + getNumberSolved());
+		System.out.println("(solved: " + getNumberSolved() + ")");
 
 	}
 
@@ -156,11 +156,13 @@ public class Puzzle {
 			for (Integer p : tempCell.getPossibleSolutions()) {
 				possibleAnswers.add(p);
 			}
+			guessCellIndex = index;
 
 			for (Integer possible : possibleAnswers) {
-				System.out.println("&&&" + row + "," + column + "\t"
-						+ possibleAnswers + "&&&" + ">>>" + possible + "<<<");
+				System.out.println("guessing: " + row + "," + column + "\t"
+						+ possibleAnswers + "[" + possible + "]");
 
+				guessAnswer = possible;
 				// TODO: SKIP IF ALREADY IN GUESSES
 				if (hasBeenGuessed(index, possible)) {
 					return;
@@ -173,8 +175,11 @@ public class Puzzle {
 				 * if the last guess was bad, revert and remove from possible
 				 * answers
 				 */
-				if (!checkValid()) {
+				if (checkValid()) {
+					backupPuzzle = new Puzzle(this);
+				} else {
 					revert();
+					return;
 				}
 			}
 
@@ -186,7 +191,17 @@ public class Puzzle {
 		this.copyPuzzle(backupPuzzle);
 		// TODO: FIGURE OUT HOW TO KEEP TRACK OF BAD GUESSES?
 		// MOST RECENT? FIRST AFTER REVERT?
-		// addBadGuess()
+		addBadGuess(guessCellIndex, guessAnswer);
+		String badString = "Bad:\n";
+		for (Integer key : badGuesses.keySet()) {
+			badString += key + "[";
+			for (Integer value : badGuesses.get(key)) {
+				badString += value + " ";
+			}
+			badString += "]";
+		}
+		System.err.println(badString);
+
 		currentGuesses.clear();
 	}
 
