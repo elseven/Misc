@@ -108,82 +108,110 @@ public class Puzzle {
 	private void guessRoot() {
 		System.out.println("GUESSING ROOT");
 		Puzzle noGuessBackup = new Puzzle(this);
+		Cell temp = null;
+		Cell tempCopy = null;
+		int index = -1;
+
+		// find the first unsolved cell
 		for (int i = 0; i < 81; i++) {
 
 			rootGuesses.clear();
 			int row = Cell.getRow(i);
 			int column = Cell.getColumn(i);
-			Cell temp = this.cells[row][column];
-			Cell tempCopy = new Cell(temp);
+			temp = this.cells[row][column];
+			tempCopy = new Cell(temp);
 			if (!temp.getIsSolved()) {
-				for (Integer possibleAnswer : tempCopy.getPossibleSolutions()) {
-					rootGuesses.add(possibleAnswer);
-					temp.setAnswer(possibleAnswer);
-					solve();
-					if (getNumberSolved() == 81) {
-						Puzzle.puzzleSolved = true;
-						return;
-					}
-					if (checkValid()) {
-						currentGuesses.clear();
-						ArrayList<Integer> tempList = new ArrayList<Integer>();
-						tempList.add(possibleAnswer);
-						currentGuesses.put(i, tempList);
+				index = i;
+				break;
+			}
+		}
 
-						// check if any solution will work
-						if (guessLeaf()) {
+		for (Integer possibleAnswer : tempCopy.getPossibleSolutions()) {
+			rootGuesses.add(possibleAnswer);
+			temp.setAnswer(possibleAnswer);
+			solve();
+			if (getNumberSolved() == 81) {
+				Puzzle.puzzleSolved = true;
+				return;
+			}
+			if (checkValid()) {
+				currentGuesses.clear();
+				ArrayList<Integer> tempList = new ArrayList<Integer>();
+				tempList.add(possibleAnswer);
+				currentGuesses.put(index, tempList);
 
-						} else {
-							revert(noGuessBackup);
-							temp.excludeSolution(possibleAnswer);
-						}
+				// check if any solution will work with current root guess
+				if (guessLeaf()) {
+					// TODO: IMPL
 
-					} else {
-						revert(noGuessBackup);
-
-					}
-
+				} else {
+					revert(noGuessBackup);
+					temp.excludeSolution(possibleAnswer);
 				}
 
+			} else {
+				revert(noGuessBackup);
+
 			}
+
 		}
 
 	}
 
-	private void guessLeaf() {
+	private boolean guessLeaf() {
 		System.out.println("CURRENT GUESS: " + currentGuesses);
-		
-		Cell temp;
-		Cell tempCopy;
-		
+		Puzzle guessBackup = new Puzzle(this);
+		Cell temp = null;
+		Cell tempCopy = null;
+		int index = -1;
+
+		// find the first unsolved cell
 		for (int i = 0; i < 81; i++) {
+
 			int row = Cell.getRow(i);
 			int column = Cell.getColumn(i);
-			Cell temp = this.cells[row][column];
-			Cell tempCopy = new Cell(temp);
+			temp = this.cells[row][column];
+			tempCopy = new Cell(temp);
 			if (!temp.getIsSolved()) {
-				for (Integer possibleAnswer : tempCopy.getPossibleSolutions()) {
-					temp.setAnswer(possibleAnswer);
-					solve();
-					if (checkValid()) {
-						current
-	
-					} else {
-						
-						ArrayList<Integer> tempList = new ArrayList<Integer>();
-						tempList.add(possibleAnswer);
-						currentGuesses.put(i, tempList);
-						
-					
-						
-					}
-
-				}
+				index = i;
+				break;
 			}
 		}
 
-		return false;
+		boolean containsValidSoution = false;
 
+		for (Integer possibleAnswer : tempCopy.getPossibleSolutions()) {
+			Puzzle tempPuzzle = new Puzzle(this);
+
+			temp.setAnswer(possibleAnswer);
+			solve();
+			if (getNumberSolved() == 81) {
+				Puzzle.puzzleSolved = true;
+				return true;
+			}
+			if (checkValid()) {
+
+				ArrayList<Integer> tempList = new ArrayList<Integer>();
+				tempList.add(possibleAnswer);
+				currentGuesses.put(index, tempList);
+				guessLeaf();
+				containsValidSoution = true;
+
+			} else {
+				revert(tempPuzzle);
+				// exclude(index, possibleAnswer);
+				temp.excludeSolution(possibleAnswer);
+
+			}
+
+		}
+
+		return !containsValidSoution;
+
+	}
+
+	private void exclude(int index, int ans) {
+		// TODO: IMPLEMENT
 	}
 
 	private int getNextUnguessedIndex() {
