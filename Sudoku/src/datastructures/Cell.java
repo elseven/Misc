@@ -40,6 +40,9 @@ public class Cell {
 	}
 
 	public void setAnswer(int answer) {
+		if (!possibleSolutions.contains(answer)) {
+			System.err.println("DOES NOT CONTAIN ANSWER!!!");
+		}
 		this.answer = answer;
 		isSolved = true;
 		possibleSolutions.clear();
