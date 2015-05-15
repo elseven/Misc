@@ -13,10 +13,7 @@ public class Puzzle {
 	public static int guessAnswer = -1;
 	public static boolean guessingHasStarted = false;
 	private static int maxLoopCount = 500;
-	// public static HashMap<Integer, ArrayList<Integer>> badGuesses = new
-	// HashMap<Integer, ArrayList<Integer>>();
-	// public static HashMap<Integer, ArrayList<Integer>> excludedGuesses = new
-	// HashMap<Integer, ArrayList<Integer>>();
+
 	public static HashMap<Integer, ArrayList<Integer>> currentGuesses = new HashMap<Integer, ArrayList<Integer>>();
 	public static HashMap<Integer, ArrayList<Integer>> possibleGuesses = new HashMap<Integer, ArrayList<Integer>>();
 
@@ -24,10 +21,6 @@ public class Puzzle {
 	public static int guessCount = 0;
 	private static boolean puzzleSolved = false;
 	public static int rootIndex = -1;
-
-	// private static ArrayList<>
-
-	// private static Stack<Puzzle> history = new Stack<Puzzle>();
 
 	public Puzzle(Puzzle other) {
 		copyPuzzle(other);
@@ -56,10 +49,10 @@ public class Puzzle {
 	}
 
 	public void run() {
-		// backupPuzzle = new Puzzle(this);
 
-		// TODO: CHANGE TO 81
-		while (true) {
+		solve();
+		printPossibleStuff();
+		while (this.getNumberSolved() < 81) {
 			solve();
 
 			// System.out.println("Solved: " + this.getNumberSolved());
@@ -104,8 +97,9 @@ public class Puzzle {
 
 	private void excludeMostRecentUnexhausted() {
 		int index = getMostRecentUnexhausted();
-		System.out.println("LEFT OFF INDEX: " + index);
-		// TODO: CHECK REF/VALUE HERE
+
+		// System.out.println("LEFT OFF INDEX: " + index);
+
 		ArrayList<Integer> failedGuesses = new ArrayList<Integer>();
 		for (Integer temp : currentGuesses.get(index)) {
 			failedGuesses.add(temp);
@@ -135,7 +129,10 @@ public class Puzzle {
 
 	private void addToCurrentSolution(int index, int possibleAnswer) {
 		if (currentGuesses.containsKey(index)) {
-			currentGuesses.get(index).add(possibleAnswer);
+			if (currentGuesses.get(index).indexOf(possibleAnswer) < 0) {
+				currentGuesses.get(index).add(possibleAnswer);
+			}
+
 		} else {
 			ArrayList<Integer> tempList = new ArrayList<Integer>();
 			tempList.add(possibleAnswer);
@@ -166,7 +163,6 @@ public class Puzzle {
 	private void guess() {
 		backupPuzzle = new Puzzle(this);
 		storeAllPossibleAnswers();
-
 		guessNext();
 
 	}
@@ -177,7 +173,7 @@ public class Puzzle {
 			Puzzle.puzzleSolved = true;
 			return true;
 		}
-		Puzzle guessBackup = new Puzzle(this);
+
 		Cell temp = null;
 		Cell tempCopy = null;
 		int index = -1;
@@ -271,29 +267,14 @@ public class Puzzle {
 		temp.excludeSolution(ans);
 	}
 
-	private int getNextUnguessedIndex() {
-		for (int i = 0; i < 81; i++) {
-			int row = Cell.getRow(i);
-			int column = Cell.getColumn(i);
-			Cell temp = this.cells[row][column];
-			if (!temp.getIsSolved()) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
 	private void revert(Puzzle other) {
+		if (this.getNumberSolved() == 81) {
+
+			return;
+		}
 		System.out.println("************reverting*****************");
 		this.copyPuzzle(other);
 		System.out.println(this);
-	}
-
-	private void revertCell(Cell revert) {
-		int index = revert.getIndex();
-		int row = Cell.getRow(index);
-		int column = Cell.getColumn(index);
-		this.cells[row][column] = new Cell(revert);
 	}
 
 	public boolean checkValid() {
@@ -338,19 +319,6 @@ public class Puzzle {
 		}
 
 		return isValid;
-	}
-
-	private ArrayList<Integer> getUnsolvedIndices() {
-		ArrayList<Integer> unsolved = new ArrayList<Integer>();
-		for (int i = 0; i < 81; i++) {
-			int row = Cell.getRow(i);
-			int column = Cell.getColumn(i);
-			Cell temp = cells[row][column];
-			if (!temp.getIsSolved()) {
-				unsolved.add(i);
-			}
-		}
-		return unsolved;
 	}
 
 	public int getNumberSolved() {
