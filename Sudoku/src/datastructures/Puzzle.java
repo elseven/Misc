@@ -116,12 +116,13 @@ public class Puzzle {
 		Cell temp = null;
 		Cell tempCopy = null;
 		int index = -1;
-
+		int row = -1;
+		int column = -1;
 		// find the first unsolved cell
 		for (int i = 0; i < 81; i++) {
 
-			int row = Cell.getRow(i);
-			int column = Cell.getColumn(i);
+			row = Cell.getRow(i);
+			column = Cell.getColumn(i);
 			temp = this.cells[row][column];
 			tempCopy = new Cell(temp);
 			if (!temp.getIsSolved()) {
@@ -133,17 +134,12 @@ public class Puzzle {
 		boolean containsValidSoution = false;
 
 		for (Integer possibleAnswer : tempCopy.getPossibleSolutions()) {
+			temp = this.cells[row][column];
 			System.out.println("CURRENT GUESS: " + index + ": "
 					+ possibleAnswer + "\t" + temp.getPossibleSolutions());
 			Puzzle tempPuzzle = new Puzzle(this);
 			System.out.println("guessing index: " + index);
-			// TODO: FIGURE THIS OUT
-			/*
-			 * if (temp.getPossibleSolutions().size() == 0) {
-			 * revert(backupPuzzle);
-			 * 
-			 * exclude(prevIndex, prevGuess); }
-			 */
+
 			if (!temp.setAnswer(possibleAnswer)) {
 
 				continue;
@@ -156,22 +152,34 @@ public class Puzzle {
 				return true;
 			}
 			if (checkValid()) {
-
+				System.out.println("VALID?");
 				ArrayList<Integer> tempList = new ArrayList<Integer>();
 				tempList.add(possibleAnswer);
 				currentGuesses.put(index, tempList);
 				containsValidSoution = true;
 				if (guessNext()) {
-					continue;
+					break;
 				} else {
 					revert(tempPuzzle);
-					temp.excludeSolution(possibleAnswer);
+					this.printPossibleStuff();
+					System.out.println("???EXCLUDE: " + possibleAnswer);
+					exclude(index, possibleAnswer);
+					// continue
+
 				}
 
 			} else {
+				this.printPossibleStuff();
+				System.out.println("=======================================");
 				revert(tempPuzzle);
 				// exclude(index, possibleAnswer);
-				temp.excludeSolution(possibleAnswer);
+				this.printPossibleStuff();
+				System.out.println("=======================================");
+				System.out.println("***EXCLUDE: " + possibleAnswer);
+				// temp.excludeSolution(possibleAnswer);
+				exclude(index, possibleAnswer);
+				System.out.println("=======================================");
+				this.printPossibleStuff();
 			}
 
 		}

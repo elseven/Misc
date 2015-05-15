@@ -53,14 +53,16 @@ public class Cell {
 
 	// TODO: USED THIS!!!!
 	public void excludeSolution(int toExclude) {
-
 		int tempIndex = this.possibleSolutions.indexOf(toExclude);
+
+		System.out.println("Pre: " + possibleSolutions + "\tremove: "
+				+ toExclude + " (at: " + tempIndex + ")");
 		if (tempIndex >= 0) {
 			this.possibleSolutions.remove(tempIndex);
 			Puzzle.changed = true;
 		}
 		if (this.possibleSolutions.size() == 1) {
-			setAnswer(this.possibleSolutions.get(0));
+			// setAnswer(this.possibleSolutions.get(0));
 		}
 
 	}
