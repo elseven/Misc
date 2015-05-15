@@ -1,18 +1,20 @@
 package datastructures;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Puzzle {
 	public Cell[][] cells = new Cell[9][9];
 
 	public static boolean changed = false;
 	public static Puzzle backupPuzzle = null;
+	public static Puzzle ancientBackupPuzzle = null;
 	public static int guessCellIndex = -1;
 	public static int guessAnswer = -1;
 	public static boolean guessingHasStarted = false;
-	public static HashMap<Integer, ArrayList<Integer>> badGuesses = new HashMap<Integer, ArrayList<Integer>>();
-	public static HashMap<Integer, ArrayList<Integer>> currentGuesses = new HashMap<Integer, ArrayList<Integer>>();
+	// public static HashMap<Integer, ArrayList<Integer>> badGuesses = new
+	// HashMap<Integer, ArrayList<Integer>>();
+	// public static HashMap<Integer, ArrayList<Integer>> currentGuesses = new
+	// HashMap<Integer, ArrayList<Integer>>();
 	public static int guessCount = 0;
 	private static boolean puzzleSolved = false;
 
@@ -44,6 +46,7 @@ public class Puzzle {
 
 	public void run() {
 		backupPuzzle = new Puzzle(this);
+		// ancientBackupPuzzle = new Puzzle(this);
 
 		// TODO: CHANGE TO 81
 		while (this.getNumberSolved() < 81) {
@@ -96,55 +99,6 @@ public class Puzzle {
 
 	}
 
-	private void addBadGuess(int index, int ans) {
-
-		System.out.println("ADDING: " + index + " = " + ans);
-		if (badGuesses.containsKey(index)) {
-			if (!badGuesses.get(index).contains(ans)) {
-				badGuesses.get(index).add(ans);
-			}
-		} else {
-
-			ArrayList<Integer> temp = new ArrayList<Integer>();
-			temp.add(ans);
-			badGuesses.put(index, temp);
-		}
-
-	}
-
-	private boolean isBadGuess(int index, int ans) {
-
-		return badGuesses.containsKey(index)
-				&& (badGuesses.get(index).contains(ans));
-
-	}
-
-	private boolean hasBeenGuessed(int index, int ans) {
-		boolean exhausted = false;
-
-		if (currentGuesses.containsKey(index)) {
-			if (currentGuesses.get(index).contains(ans)) {
-				exhausted = true;
-			} else {
-				currentGuesses.get(index).add(ans);
-			}
-		} else {
-			exhausted = false;
-			ArrayList<Integer> temp = new ArrayList<Integer>();
-			temp.add(ans);
-			currentGuesses.put(index, temp);
-		}
-		if (isBadGuess(index, ans)) {
-			System.err.println("bad!!!!!!");
-			exhausted = true;
-		} else {
-			System.err.println("good??");
-		}
-
-		return exhausted;
-
-	}
-
 	public void guess() {
 		System.out.println("GUESSING");
 		ArrayList<Integer> unsolved = getUnsolvedIndices();
@@ -168,10 +122,7 @@ public class Puzzle {
 						+ possibleAnswers + "[" + possible + "]");
 
 				guessAnswer = possible;
-				// TODO: SKIP IF ALREADY IN GUESSES
-				if (hasBeenGuessed(index, possible)) {
-					continue;
-				}
+
 				this.cells[row][column].setAnswer(possible);
 
 				// attempt to solve with this cell changed
@@ -181,8 +132,8 @@ public class Puzzle {
 				 * answers
 				 */
 				if (checkValid()) {
-					// backupPuzzle = new Puzzle(this);
-					// return;
+					backupPuzzle = new Puzzle(this);
+					return;
 				} else {
 
 					revert();
@@ -199,20 +150,7 @@ public class Puzzle {
 		// MOST RECENT? FIRST AFTER REVERT?
 
 		// addBadGuess(guessCellIndex, guessAnswer);
-		int tempGuess = (Integer) currentGuesses.keySet().toArray()[0];
-		int tempAns = (Integer) currentGuesses.get(tempGuess).get(0);
-		addBadGuess(tempGuess, tempAns);
-		String badString = "Bad:";
-		for (Integer key : badGuesses.keySet()) {
-			badString += "\n\t" + key + "[";
-			for (Integer value : badGuesses.get(key)) {
-				badString += value + " ";
-			}
-			badString += "]";
-		}
-		System.out.println(badString);
 
-		currentGuesses.clear();
 	}
 
 	public boolean checkValid() {

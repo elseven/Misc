@@ -54,6 +54,9 @@ public class Cell {
 			this.possibleSolutions.remove(tempIndex);
 			Puzzle.changed = true;
 		}
+		if (this.possibleSolutions.size() == 1) {
+			setAnswer(this.possibleSolutions.get(0));
+		}
 
 	}
 
