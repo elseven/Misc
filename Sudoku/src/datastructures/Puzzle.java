@@ -92,6 +92,7 @@ public class Puzzle {
 			backupPuzzle = new Puzzle(this);
 		}
 		System.out.println("(solved: " + getNumberSolved() + ")");
+		System.out.println(this);
 
 	}
 
@@ -133,7 +134,10 @@ public class Puzzle {
 			currentGuesses.put(index, temp);
 		}
 		if (isBadGuess(index, ans)) {
+			System.err.println("bad!!!!!!");
 			exhausted = true;
+		} else {
+			System.err.println("good??");
 		}
 
 		return exhausted;
@@ -177,12 +181,12 @@ public class Puzzle {
 				 */
 				if (checkValid()) {
 					backupPuzzle = new Puzzle(this);
+					return;
 				} else {
 					revert();
 					return;
 				}
 			}
-
 		}
 	}
 
@@ -192,9 +196,9 @@ public class Puzzle {
 		// TODO: FIGURE OUT HOW TO KEEP TRACK OF BAD GUESSES?
 		// MOST RECENT? FIRST AFTER REVERT?
 		addBadGuess(guessCellIndex, guessAnswer);
-		String badString = "Bad:\n";
+		String badString = "Bad:";
 		for (Integer key : badGuesses.keySet()) {
-			badString += key + "[";
+			badString += "\n\t" + key + "[";
 			for (Integer value : badGuesses.get(key)) {
 				badString += value + " ";
 			}
@@ -233,7 +237,7 @@ public class Puzzle {
 		}
 
 		if (isValid) {
-			// TODO: IMPLEMENT OTHER CHECK
+
 			for (int i = 0; i < 81; i++) {
 				int row = Cell.getRow(i);
 				int column = Cell.getColumn(i);
@@ -243,9 +247,7 @@ public class Puzzle {
 					isValid = false;
 					break;
 				}
-
 			}
-
 		}
 
 		return isValid;
