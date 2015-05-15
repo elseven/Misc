@@ -1,10 +1,11 @@
 package datastructures;
 
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Puzzle {
 	public Cell[][] cells = new Cell[9][9];
-
+	public static Scanner scanner = new Scanner(System.in);
 	public static boolean changed = false;
 	// public static Puzzle backupPuzzle = null;
 	public static int guessCellIndex = -1;
@@ -17,6 +18,8 @@ public class Puzzle {
 	// HashMap<Integer, ArrayList<Integer>>();
 	public static int guessCount = 0;
 	private static boolean puzzleSolved = false;
+
+	// private static Stack<Puzzle> history = new Stack<Puzzle>();
 
 	public Puzzle(Puzzle other) {
 		copyPuzzle(other);
@@ -48,12 +51,15 @@ public class Puzzle {
 		// backupPuzzle = new Puzzle(this);
 
 		// TODO: CHANGE TO 81
-		while (this.getNumberSolved() < 81) {
+		while (true) {
 			solve();
 
 			System.out.println("Solved: " + this.getNumberSolved());
-
+			if (this.getNumberSolved() == 81) {
+				break;
+			}
 			guess();
+
 		}
 		System.out
 				.println("******************************************************");
@@ -67,8 +73,6 @@ public class Puzzle {
 	public void solve() {
 		System.out.println("*************SOLVING*********************");
 		System.out.println(this);
-		// System.out.println("Possible: ");
-		// this.printPossibleStuff();
 
 		puzzleSolved = false;
 		int loops = 0;
@@ -91,34 +95,92 @@ public class Puzzle {
 	}
 
 	public void guess() {
+
 		System.out.println("GUESSING");
-		ArrayList<Integer> unsolved = getUnsolvedIndices();
 
-		// For each unsolved cell
-		for (int i = 0; i < unsolved.size(); i++) {
+		// for each cell
+		for (int i = 0; i < 81; i++) {
+			Puzzle backupPuzzleI = new Puzzle(this);
+			int rowI = Cell.getRow(i);
+			int columnI = Cell.getColumn(i);
+			Cell cellI = cells[rowI][columnI];
+			Cell copyI = new Cell(cellI);
+			if (cellI.getIsSolved()) {
+				continue;
+			}
 
-			int index = unsolved.get(i);
-
-			int row = Cell.getRow(index);
-			int column = Cell.getColumn(index);
-			Cell tempCell = cells[row][column];
-			Cell copy = new Cell(tempCell);
-			Puzzle backupPuzzle = new Puzzle(this);
-			// for each possible solution to cell
-			for (Integer possibleAnswer : copy.getPossibleSolutions()) {
-				tempCell.setAnswer(possibleAnswer);
+			// for each possible solution to the first cell (I)
+			for (Integer possibleI : copyI.getPossibleSolutions()) {
+				cellI.setAnswer(possibleI);
 				solve();
-				if (checkValid()) {
-
-					break;
-				} else {
-					revert(backupPuzzle);
+				// if everything is solved, quit
+				if (getNumberSolved() == 81) {
+					puzzleSolved = true;
+					return;
 				}
 
-			}
+				/*
+				 * if this guess didn't break anything, but it requires another
+				 * guess
+				 */
+				if (checkValid()) {
+					System.out.println("GOOD I!!!!!");
+					// TODO: CHECK IF THIS NEEDS TO GO HERE: Puzzle
+					Puzzle backupPuzzleJ = new Puzzle(this);
+
+					// next level deep of guessing
+					for (int j = 0; j < 81; j++) {
+						// Puzzle backupPuzzleJ = new Puzzle(this);
+						int rowJ = Cell.getRow(j);
+						int columnJ = Cell.getColumn(j);
+						Cell cellJ = cells[rowJ][columnJ];
+						Cell copyJ = new Cell(cellJ);
+						if (cellJ.getIsSolved()) {
+							continue;
+						}
+
+						for (Integer possibleJ : copyJ.getPossibleSolutions()) {
+							cellJ.setAnswer(possibleJ);
+							solve();
+							// if everything is solved, quit
+							if (getNumberSolved() == 81) {
+								puzzleSolved = true;
+								return;
+							}
+							if (checkValid()) {
+								System.out.println("GOOD J!");
+							} else {
+								System.out.println("BAD J!");
+								revert(backupPuzzleJ);
+							}
+						}
+
+					}// end for j
+
+				} else {
+					System.out.println("BAD I!!!!!");
+					revert(backupPuzzleI);
+				}// end if-else checkValid
+
+			}// end for possibleI
+
+			// TODO:
+			// if nothing was possible, revert
 
 		}
 
+	}
+
+	private int getNextUnguessedIndex() {
+		for (int i = 0; i < 81; i++) {
+			int row = Cell.getRow(i);
+			int column = Cell.getColumn(i);
+			Cell temp = this.cells[row][column];
+			if (!temp.getIsSolved()) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	private void revert(Puzzle other) {
