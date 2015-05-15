@@ -60,7 +60,7 @@ public class Puzzle {
 		while (true) {
 			solve();
 
-			System.out.println("Solved: " + this.getNumberSolved());
+			// System.out.println("Solved: " + this.getNumberSolved());
 			if (this.getNumberSolved() == 81) {
 				break;
 			}
@@ -78,7 +78,7 @@ public class Puzzle {
 
 	public void solve() {
 		System.out.println("*************SOLVING*********************");
-		// System.out.println(this);
+		System.out.println(this);
 
 		puzzleSolved = false;
 		int loops = 0;
@@ -96,18 +96,22 @@ public class Puzzle {
 		}
 
 		System.out.println("(solved: " + getNumberSolved() + ")");
-		// System.out.println(this);
+		System.out.println(this);
 
 	}
 
 	private void guess() {
 		backupPuzzle = new Puzzle(this);
-		guessNext(-1, -1);
+		guessNext();
 
 	}
 
-	private boolean guessNext(int prevIndex, int prevGuess) {
-		System.out.println("CURRENT GUESS: " + prevIndex + ": " + prevGuess);
+	private boolean guessNext() {
+		// System.out.println("PREV GUESS: " + prevIndex + ": " + prevGuess);
+		if (getNumberSolved() == 81) {
+			Puzzle.puzzleSolved = true;
+			return true;
+		}
 		Puzzle guessBackup = new Puzzle(this);
 		Cell temp = null;
 		Cell tempCopy = null;
@@ -129,13 +133,20 @@ public class Puzzle {
 		boolean containsValidSoution = false;
 
 		for (Integer possibleAnswer : tempCopy.getPossibleSolutions()) {
+			System.out.println("CURRENT GUESS: " + index + ": "
+					+ possibleAnswer + "\t" + temp.getPossibleSolutions());
 			Puzzle tempPuzzle = new Puzzle(this);
 			System.out.println("guessing index: " + index);
-
+			// TODO: FIGURE THIS OUT
+			/*
+			 * if (temp.getPossibleSolutions().size() == 0) {
+			 * revert(backupPuzzle);
+			 * 
+			 * exclude(prevIndex, prevGuess); }
+			 */
 			if (!temp.setAnswer(possibleAnswer)) {
-				// TODO: FIGURE THIS OUT
-				revert(backupPuzzle);
-				exclude(prevIndex, prevGuess);
+
+				continue;
 
 			}
 			solve();
@@ -150,7 +161,7 @@ public class Puzzle {
 				tempList.add(possibleAnswer);
 				currentGuesses.put(index, tempList);
 				containsValidSoution = true;
-				if (guessNext(index, possibleAnswer)) {
+				if (guessNext()) {
 					continue;
 				} else {
 					revert(tempPuzzle);
@@ -169,6 +180,8 @@ public class Puzzle {
 			System.out.println(">>>>>>>>>>>no valid solution for index: "
 					+ index + "<<<<<<<<<<<<");
 			revert(guessBackup);
+
+			guessNext();
 
 		}
 
@@ -199,6 +212,7 @@ public class Puzzle {
 	private void revert(Puzzle other) {
 		System.out.println("************reverting*****************");
 		this.copyPuzzle(other);
+		System.out.println(this);
 	}
 
 	private void revertCell(Cell revert) {
