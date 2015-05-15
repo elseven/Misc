@@ -98,6 +98,7 @@ public class Puzzle {
 
 	private void addBadGuess(int index, int ans) {
 
+		System.out.println("ADDING: " + index + " = " + ans);
 		if (badGuesses.containsKey(index)) {
 			if (!badGuesses.get(index).contains(ans)) {
 				badGuesses.get(index).add(ans);
@@ -169,7 +170,7 @@ public class Puzzle {
 				guessAnswer = possible;
 				// TODO: SKIP IF ALREADY IN GUESSES
 				if (hasBeenGuessed(index, possible)) {
-					return;
+					continue;
 				}
 				this.cells[row][column].setAnswer(possible);
 
@@ -180,9 +181,10 @@ public class Puzzle {
 				 * answers
 				 */
 				if (checkValid()) {
-					backupPuzzle = new Puzzle(this);
-					return;
+					// backupPuzzle = new Puzzle(this);
+					// return;
 				} else {
+
 					revert();
 					return;
 				}
@@ -191,11 +193,15 @@ public class Puzzle {
 	}
 
 	private void revert() {
-		System.err.println("REVERTING");
+		System.out.println("REVERTING");
 		this.copyPuzzle(backupPuzzle);
 		// TODO: FIGURE OUT HOW TO KEEP TRACK OF BAD GUESSES?
 		// MOST RECENT? FIRST AFTER REVERT?
-		addBadGuess(guessCellIndex, guessAnswer);
+
+		// addBadGuess(guessCellIndex, guessAnswer);
+		int tempGuess = (Integer) currentGuesses.keySet().toArray()[0];
+		int tempAns = (Integer) currentGuesses.get(tempGuess).get(0);
+		addBadGuess(tempGuess, tempAns);
 		String badString = "Bad:";
 		for (Integer key : badGuesses.keySet()) {
 			badString += "\n\t" + key + "[";
@@ -204,7 +210,7 @@ public class Puzzle {
 			}
 			badString += "]";
 		}
-		System.err.println(badString);
+		System.out.println(badString);
 
 		currentGuesses.clear();
 	}
