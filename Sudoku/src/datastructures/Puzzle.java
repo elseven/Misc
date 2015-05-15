@@ -15,8 +15,10 @@ public class Puzzle {
 	private static int maxLoopCount = 500;
 	// public static HashMap<Integer, ArrayList<Integer>> badGuesses = new
 	// HashMap<Integer, ArrayList<Integer>>();
-	public static HashMap<Integer, ArrayList<Integer>> excludedGuesses = new HashMap<Integer, ArrayList<Integer>>();
+	// public static HashMap<Integer, ArrayList<Integer>> excludedGuesses = new
+	// HashMap<Integer, ArrayList<Integer>>();
 	public static HashMap<Integer, ArrayList<Integer>> currentGuesses = new HashMap<Integer, ArrayList<Integer>>();
+	public static HashMap<Integer, ArrayList<Integer>> possibleGuesses = new HashMap<Integer, ArrayList<Integer>>();
 
 	public static ArrayList<Integer> rootGuesses = new ArrayList<Integer>();
 	public static int guessCount = 0;
@@ -100,8 +102,65 @@ public class Puzzle {
 
 	}
 
+	private void excludeMostRecentUnexhausted() {
+		int index = getMostRecentUnexhausted();
+		System.out.println("LEFT OFF INDEX: " + index);
+		// TODO: CHECK REF/VALUE HERE
+		ArrayList<Integer> failedGuesses = currentGuesses.get(index);
+		for (Integer failed : failedGuesses) {
+			exclude(index, failed);
+		}
+	}
+
+	private int getMostRecentUnexhausted() {
+
+		for (int i = 0; i < currentGuesses.size(); i++) {
+			int index = (int) currentGuesses.keySet().toArray()[i];
+
+			if (currentGuesses.get(index).size() < possibleGuesses.get(index)
+					.size()) {
+				return index;
+			}
+
+		}
+		return -1;
+
+	}
+
+	private void addToCurrentSolution(int index, int possibleAnswer) {
+		if (currentGuesses.containsKey(index)) {
+			currentGuesses.get(index).add(possibleAnswer);
+		} else {
+			ArrayList<Integer> tempList = new ArrayList<Integer>();
+			tempList.add(possibleAnswer);
+			currentGuesses.put(index, tempList);
+
+		}
+	}
+
+	private void storeAllPossibleAnswers() {
+
+		possibleGuesses.clear();
+		for (int i = 0; i < 81; i++) {
+			int row = Cell.getRow(i);
+			int column = Cell.getColumn(i);
+			Cell temp = this.cells[row][column];
+			if (!temp.getIsSolved()) {
+				ArrayList<Integer> tempList = new ArrayList<Integer>();
+				for (Integer possible : temp.getPossibleSolutions()) {
+					tempList.add(possible);
+				}
+				possibleGuesses.put(i, tempList);
+
+			}
+		}
+
+	}
+
 	private void guess() {
 		backupPuzzle = new Puzzle(this);
+		storeAllPossibleAnswers();
+
 		guessNext();
 
 	}
@@ -139,6 +198,7 @@ public class Puzzle {
 					+ possibleAnswer + "\t" + temp.getPossibleSolutions());
 			Puzzle tempPuzzle = new Puzzle(this);
 			System.out.println("guessing index: " + index);
+			addToCurrentSolution(index, possibleAnswer);
 
 			if (!temp.setAnswer(possibleAnswer)) {
 
@@ -153,9 +213,7 @@ public class Puzzle {
 			}
 			if (checkValid()) {
 				System.out.println("VALID?");
-				ArrayList<Integer> tempList = new ArrayList<Integer>();
-				tempList.add(possibleAnswer);
-				currentGuesses.put(index, tempList);
+
 				containsValidSoution = true;
 				if (guessNext()) {
 					break;
@@ -187,13 +245,14 @@ public class Puzzle {
 		if (!containsValidSoution) {
 			System.out.println(">>>>>>>>>>>no valid solution for index: "
 					+ index + "<<<<<<<<<<<<");
-			revert(guessBackup);
-
+			revert(backupPuzzle);
+			// TODO: NEED TO FIGURE OUT HOW TO REVERT TO MOST RECENT UNEXHAUSTED
+			excludeMostRecentUnexhausted();
 			guessNext();
 
 		}
 
-		return true;
+		return false;
 	}
 
 	private void exclude(int index, int ans) {
