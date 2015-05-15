@@ -106,10 +106,16 @@ public class Puzzle {
 		int index = getMostRecentUnexhausted();
 		System.out.println("LEFT OFF INDEX: " + index);
 		// TODO: CHECK REF/VALUE HERE
-		ArrayList<Integer> failedGuesses = currentGuesses.get(index);
+		ArrayList<Integer> failedGuesses = new ArrayList<Integer>();
+		for (Integer temp : currentGuesses.get(index)) {
+			failedGuesses.add(temp);
+		}
+		currentGuesses.clear();
 		for (Integer failed : failedGuesses) {
+			addToCurrentSolution(index, failed);
 			exclude(index, failed);
 		}
+		backupPuzzle = new Puzzle(this);
 	}
 
 	private int getMostRecentUnexhausted() {
@@ -227,11 +233,12 @@ public class Puzzle {
 				}
 
 			} else {
-				this.printPossibleStuff();
+				// this.printPossibleStuff();
 				System.out.println("=======================================");
 				revert(tempPuzzle);
 				// exclude(index, possibleAnswer);
-				this.printPossibleStuff();
+				// this.printPossibleStuff();
+				System.out.println("CURRENT GUESSES: " + currentGuesses);
 				System.out.println("=======================================");
 				System.out.println("***EXCLUDE: " + possibleAnswer);
 				// temp.excludeSolution(possibleAnswer);
