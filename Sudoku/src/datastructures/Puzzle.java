@@ -6,11 +6,11 @@ public class Puzzle {
 	public Cell[][] cells = new Cell[9][9];
 
 	public static boolean changed = false;
-	public static Puzzle backupPuzzle = null;
-	public static Puzzle ancientBackupPuzzle = null;
+	// public static Puzzle backupPuzzle = null;
 	public static int guessCellIndex = -1;
 	public static int guessAnswer = -1;
 	public static boolean guessingHasStarted = false;
+	private static int maxLoopCount = 500;
 	// public static HashMap<Integer, ArrayList<Integer>> badGuesses = new
 	// HashMap<Integer, ArrayList<Integer>>();
 	// public static HashMap<Integer, ArrayList<Integer>> currentGuesses = new
@@ -45,8 +45,7 @@ public class Puzzle {
 	}
 
 	public void run() {
-		backupPuzzle = new Puzzle(this);
-		// ancientBackupPuzzle = new Puzzle(this);
+		// backupPuzzle = new Puzzle(this);
 
 		// TODO: CHANGE TO 81
 		while (this.getNumberSolved() < 81) {
@@ -54,13 +53,7 @@ public class Puzzle {
 
 			System.out.println("Solved: " + this.getNumberSolved());
 
-			if (!puzzleSolved) {
-				if (!guessingHasStarted) {
-					backupPuzzle = new Puzzle(this);
-				}
-				guessingHasStarted = true;
-				guess();
-			}
+			guess();
 		}
 		System.out
 				.println("******************************************************");
@@ -81,7 +74,7 @@ public class Puzzle {
 		int loops = 0;
 
 		changed = true;
-		while (!puzzleSolved && changed && loops < 10000) {
+		while (!puzzleSolved && changed && loops < maxLoopCount) {
 			changed = false;
 			puzzleSolved = true;
 
@@ -91,9 +84,7 @@ public class Puzzle {
 			}
 			loops++;
 		}
-		if (!guessingHasStarted) {
-			backupPuzzle = new Puzzle(this);
-		}
+
 		System.out.println("(solved: " + getNumberSolved() + ")");
 		System.out.println(this);
 
@@ -102,6 +93,8 @@ public class Puzzle {
 	public void guess() {
 		System.out.println("GUESSING");
 		ArrayList<Integer> unsolved = getUnsolvedIndices();
+
+		// For each unsolved cell
 		for (int i = 0; i < unsolved.size(); i++) {
 
 			int index = unsolved.get(i);
@@ -109,48 +102,35 @@ public class Puzzle {
 			int row = Cell.getRow(index);
 			int column = Cell.getColumn(index);
 			Cell tempCell = cells[row][column];
-			// System.out.println("***" + "***");
-
-			ArrayList<Integer> possibleAnswers = new ArrayList<Integer>();
-			for (Integer p : tempCell.getPossibleSolutions()) {
-				possibleAnswers.add(p);
-			}
-			guessCellIndex = index;
-
-			for (Integer possible : possibleAnswers) {
-				System.out.println("guessing: " + row + "," + column + "\t"
-						+ possibleAnswers + "[" + possible + "]");
-
-				guessAnswer = possible;
-
-				this.cells[row][column].setAnswer(possible);
-
-				// attempt to solve with this cell changed
+			Cell copy = new Cell(tempCell);
+			Puzzle backupPuzzle = new Puzzle(this);
+			// for each possible solution to cell
+			for (Integer possibleAnswer : copy.getPossibleSolutions()) {
+				tempCell.setAnswer(possibleAnswer);
 				solve();
-				/*
-				 * if the last guess was bad, revert and remove from possible
-				 * answers
-				 */
 				if (checkValid()) {
-					backupPuzzle = new Puzzle(this);
-					return;
-				} else {
 
-					revert();
-					return;
+					break;
+				} else {
+					revert(backupPuzzle);
 				}
+
 			}
+
 		}
+
 	}
 
-	private void revert() {
-		System.out.println("REVERTING");
-		this.copyPuzzle(backupPuzzle);
-		// TODO: FIGURE OUT HOW TO KEEP TRACK OF BAD GUESSES?
-		// MOST RECENT? FIRST AFTER REVERT?
+	private void revert(Puzzle other) {
+		System.out.println("************reverting*****************");
+		this.copyPuzzle(other);
+	}
 
-		// addBadGuess(guessCellIndex, guessAnswer);
-
+	private void revertCell(Cell revert) {
+		int index = revert.getIndex();
+		int row = Cell.getRow(index);
+		int column = Cell.getColumn(index);
+		this.cells[row][column] = new Cell(revert);
 	}
 
 	public boolean checkValid() {
