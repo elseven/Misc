@@ -39,13 +39,15 @@ public class Cell {
 		return index;
 	}
 
-	public void setAnswer(int answer) {
+	public boolean setAnswer(int answer) {
 		if (!possibleSolutions.contains(answer)) {
 			System.err.println("DOES NOT CONTAIN ANSWER!!!");
+			return false;
 		}
 		this.answer = answer;
 		isSolved = true;
 		possibleSolutions.clear();
+		return true;
 
 	}
 

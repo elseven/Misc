@@ -15,9 +15,13 @@ public class Puzzle {
 	private static int maxLoopCount = 500;
 	// public static HashMap<Integer, ArrayList<Integer>> badGuesses = new
 	// HashMap<Integer, ArrayList<Integer>>();
+	public static HashMap<Integer, ArrayList<Integer>> excludedGuesses = new HashMap<Integer, ArrayList<Integer>>();
 	public static HashMap<Integer, ArrayList<Integer>> currentGuesses = new HashMap<Integer, ArrayList<Integer>>();
+
+	public static ArrayList<Integer> rootGuesses = new ArrayList<Integer>();
 	public static int guessCount = 0;
 	private static boolean puzzleSolved = false;
+	public static int rootIndex = -1;
 
 	// private static ArrayList<>
 
@@ -96,48 +100,90 @@ public class Puzzle {
 
 	}
 
-	private boolean hasBeenExhausted(int index){
-		???????????????????
-	}
-
-	private boolean checkTree(){
-		?????????????
-	}
-
 	private void guess() {
 
-		System.out.println("GUESSING");
-		Puzzle noGuessBackup = new Puzzle(this);
+		guessRoot();
+	}
 
+	private void guessRoot() {
+		System.out.println("GUESSING ROOT");
+		Puzzle noGuessBackup = new Puzzle(this);
 		for (int i = 0; i < 81; i++) {
 
-			Puzzle guessBackup = new Puzzle(this);
+			rootGuesses.clear();
 			int row = Cell.getRow(i);
 			int column = Cell.getColumn(i);
 			Cell temp = this.cells[row][column];
 			Cell tempCopy = new Cell(temp);
 			if (!temp.getIsSolved()) {
-				ArrayList<Integer> impossible = new ArrayList<Integer>();
-				for (Integer possible : tempCopy.getPossibleSolutions()) {
-					temp.setAnswer(possible);
+				for (Integer possibleAnswer : tempCopy.getPossibleSolutions()) {
+					rootGuesses.add(possibleAnswer);
+					temp.setAnswer(possibleAnswer);
 					solve();
-
-					if (checkValid()) {
-
-						// i = 0;
-						// break;
-					} else {
-						revert(guessBackup);
-						temp.excludeSolution(possible);
-						System.out.println(tempCopy.getPossibleSolutions());
-						System.out
-								.println(temp + ":\timpossible:" + impossible);
-						i = 0;
-						break;
+					if (getNumberSolved() == 81) {
+						Puzzle.puzzleSolved = true;
+						return;
 					}
+					if (checkValid()) {
+						currentGuesses.clear();
+						ArrayList<Integer> tempList = new ArrayList<Integer>();
+						tempList.add(possibleAnswer);
+						currentGuesses.put(i, tempList);
+
+						// check if any solution will work
+						if (guessLeaf()) {
+
+						} else {
+							revert(noGuessBackup);
+							temp.excludeSolution(possibleAnswer);
+						}
+
+					} else {
+						revert(noGuessBackup);
+
+					}
+
+				}
+
+			}
+		}
+
+	}
+
+	private void guessLeaf() {
+		System.out.println("CURRENT GUESS: " + currentGuesses);
+		
+		Cell temp;
+		Cell tempCopy;
+		
+		for (int i = 0; i < 81; i++) {
+			int row = Cell.getRow(i);
+			int column = Cell.getColumn(i);
+			Cell temp = this.cells[row][column];
+			Cell tempCopy = new Cell(temp);
+			if (!temp.getIsSolved()) {
+				for (Integer possibleAnswer : tempCopy.getPossibleSolutions()) {
+					temp.setAnswer(possibleAnswer);
+					solve();
+					if (checkValid()) {
+						current
+	
+					} else {
+						
+						ArrayList<Integer> tempList = new ArrayList<Integer>();
+						tempList.add(possibleAnswer);
+						currentGuesses.put(i, tempList);
+						
+					
+						
+					}
+
 				}
 			}
 		}
+
+		return false;
+
 	}
 
 	private int getNextUnguessedIndex() {
