@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 import datastructures.Puzzle;
 
 public class Driver {
-
+	public static boolean debug = false;
 	private static int puzzleIndex = 2;
 	public static PrintStream errOut = null;
 
@@ -38,15 +38,18 @@ public class Driver {
 		 * + puzzle.getNumberSolved()); puzzle.run();
 		 */
 
-		for (int i = 2; i < 3; i++) {
+		for (int i = 0; i < 20; i++) {
 			int startIndex = 81 * i + i;
 			int endIndex = startIndex + 81;
-			System.out.println(input.substring(startIndex, endIndex));
+			System.out.println("====================================");
+			System.out.println("Input Puzzle:\n"
+					+ input.substring(startIndex, endIndex));
 			Puzzle puzzle = new Puzzle(input.substring(startIndex, endIndex));
 
 			System.out.println(puzzle);
-			System.out
-					.println("Originally solved: " + puzzle.getNumberSolved());
+			System.out.println("Number of orginially solved cells: "
+					+ puzzle.getNumberSolved());
+			System.out.println("====================================");
 			puzzle.run();
 		}
 

@@ -55,29 +55,33 @@ public class Puzzle {
 	public void run() {
 
 		solve();
-		printPossibleStuff();
-		while (this.getNumberSolved() < 81) {
-			solve();
 
-			// Driver.errOut.println("Solved: " + this.getNumberSolved());
-			if (this.getNumberSolved() == 81) {
-				break;
-			}
+		// Driver.errOut.println("Solved: " + this.getNumberSolved());
+		if (this.getNumberSolved() < 81) {
 			guess();
+		}
+		if (puzzleSolved) {
+
+			System.out
+					.println("******************************************************");
+			System.out
+					.println("**********************ANSWER:*************************");
+			System.out
+					.println("******************************************************");
+			System.out.println(this);
+
+		} else {
+			System.err.println("IMPOSSIBLE!!!");
 
 		}
-		Driver.errOut
-				.println("******************************************************");
-		Driver.errOut
-				.println("**********************ANSWER:*************************");
-		Driver.errOut
-				.println("******************************************************");
-		Driver.errOut.println(this);
+
 	}
 
 	public void solve() {
-		Driver.errOut.println("*************SOLVING*********************");
-		Driver.errOut.println(this);
+		if (Driver.debug) {
+			Driver.errOut.println("*************SOLVING*********************");
+			Driver.errOut.println(this);
+		}
 
 		puzzleSolved = false;
 		int loops = 0;
@@ -94,19 +98,16 @@ public class Puzzle {
 			loops++;
 		}
 
-		Driver.errOut.println("(solved: " + getNumberSolved() + ")");
-		Driver.errOut.println(this);
+		if (Driver.debug) {
+			Driver.errOut.println("(solved: " + getNumberSolved() + ")");
+			Driver.errOut.println(this);
+		}
 
 	}
 
 	private void guess() {
 		Puzzle backupPuzzle = new Puzzle(this);
-
-		if (guessNext(backupPuzzle)) {
-			System.out.println("SOLVED!");
-		} else {
-			System.err.println("IMPOSSIBLE!");
-		}
+		guessNext(backupPuzzle);
 
 	}
 
@@ -135,8 +136,7 @@ public class Puzzle {
 				break;
 			}
 		}
-		System.out.print("GUESS (" + index + "):\t"
-				+ temp.getPossibleSolutions() + ":\t");
+
 		// Puzzle tempPuzzle = new Puzzle(this);
 		boolean containsValidSoution = false;
 
@@ -144,10 +144,12 @@ public class Puzzle {
 		for (Integer possibleAnswer : tempCopy.getPossibleSolutions()) {
 
 			temp = this.cells[row][column];
-			System.out.println(possibleAnswer);
 
 			if (!temp.setAnswer(possibleAnswer)) {
-				System.out.println("???");
+				if (Driver.debug) {
+					System.out.println("???");
+				}
+
 				continue;
 
 			}
@@ -160,14 +162,15 @@ public class Puzzle {
 
 			// if current guess doesn't cause problems, attempt next guess
 			if (checkValid()) {
-				System.out.println("VALID?");
-				System.out.println(this);
+				if (Driver.debug) {
+					System.out.println("VALID?");
+					System.out.println(this);
+				}
 
 				containsValidSoution = true;
 
 				// if the next guess works
 				if (guessNext(previousPuzzle)) {
-					System.out.println("return true?:\n" + this);
 
 					// if the puzzle is solved, quit
 					if (getNumberSolved() == 81) {
@@ -183,19 +186,15 @@ public class Puzzle {
 					 * guesses
 					 */
 					revert(previousPuzzle);
-					// this.printPossibleStuff();
-					System.out.println("???EXCLUDE: " + index + " "
-							+ possibleAnswer);
-					// exclude(index, possibleAnswer);
-
-					// continue
 
 				}
 
 			} else {
-				System.out.println("=============================");
-				System.out.println("temp REVERT!");
-				System.out.println("pre:\n" + this);
+				if (Driver.debug) {
+					System.out.println("=============================");
+					System.out.println("temp REVERT!");
+					System.out.println("pre:\n" + this);
+				}
 				/*
 				 * if the guess didn't work, go on to the next possible solution
 				 * for this cell
@@ -208,7 +207,10 @@ public class Puzzle {
 		}// END FOR EACH SOLUTION
 
 		if (!containsValidSoution) {
-			System.out.println("PREV REVERT");
+			if (Driver.debug) {
+				System.out.println("PREV REVERT");
+			}
+
 			revert(previousPuzzle);
 
 			return false;
@@ -220,12 +222,16 @@ public class Puzzle {
 
 	private void revert(Puzzle other) {
 		if (this.getNumberSolved() == 81) {
-
 			return;
 		}
-		System.out.println("************reverting*****************");
+		if (Driver.debug) {
+			System.out.println("************reverting*****************");
+		}
 		this.copyPuzzle(other);
-		System.out.println(this);
+		if (Driver.debug) {
+			System.out.println(this);
+		}
+
 	}
 
 	public boolean checkValid() {
