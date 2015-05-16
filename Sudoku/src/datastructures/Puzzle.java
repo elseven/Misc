@@ -11,7 +11,7 @@ public class Puzzle {
 	public static Scanner scanner = new Scanner(System.in);
 
 	public static boolean changed = false;
-	public static Puzzle backupPuzzle = null;
+	// public static Puzzle backupPuzzle = null;
 	public static int guessCellIndex = -1;
 	public static int guessAnswer = -1;
 	public static boolean guessingHasStarted = false;
@@ -99,97 +99,24 @@ public class Puzzle {
 
 	}
 
-	private void excludeMostRecentUnexhausted() {
-		int index = getMostRecentUnexhausted();
-
-		// Driver.errOut.println("LEFT OFF INDEX: " + index);
-
-		ArrayList<Integer> failedGuesses = new ArrayList<Integer>(9);
-		for (Integer temp : currentGuesses.get(index)) {
-			failedGuesses.add(temp);
-		}
-		currentGuesses.clear();
-		for (Integer failed : failedGuesses) {
-			addToCurrentSolution(index, failed);
-			exclude(index, failed);
-		}
-
-		backupPuzzle = new Puzzle(this);
-	}
-
-	private int getMostRecentUnexhausted() {
-		/*
-		 * for (int i = 0; i < currentGuesses.size(); i++) { int index = (int)
-		 * currentGuesses.keySet().toArray()[i];
-		 * 
-		 * if (currentGuesses.get(index).size() < possibleGuesses.get(index)
-		 * .size()) { return index; }
-		 * 
-		 * }
-		 */
-
-		for (int i = 0; i < currentGuesses.size(); i++) {
-			int index = (int) currentGuesses.keySet().toArray()[i];
-
-			if (currentGuesses.get(index).size() < possibleGuesses.get(index)
-					.size()) {
-				return index;
-			}
-
-		}
-		return -1;
-
-	}
-
-	private void addToCurrentSolution(int index, int possibleAnswer) {
-		System.out.println("******");
-		if (currentGuesses.containsKey(index)) {
-			if (currentGuesses.get(index).indexOf(possibleAnswer) < 0) {
-				currentGuesses.get(index).add(possibleAnswer);
-			} else {
-				System.out.println("REPEAT!");
-			}
-
-		} else {
-			ArrayList<Integer> tempList = new ArrayList<Integer>(9);
-			tempList.add(possibleAnswer);
-			currentGuesses.put(index, tempList);
-		}
-	}
-
-	private void storeAllPossibleAnswers() {
-
-		possibleGuesses.clear();
-		for (int i = 0; i < 81; i++) {
-			int row = Cell.getRow(i);
-			int column = Cell.getColumn(i);
-			Cell temp = this.cells[row][column];
-			if (!temp.getIsSolved()) {
-				ArrayList<Integer> tempList = new ArrayList<Integer>();
-				for (Integer possible : temp.getPossibleSolutions()) {
-					tempList.add(possible);
-				}
-				possibleGuesses.put(i, tempList);
-
-			}
-		}
-
-	}
-
 	private void guess() {
-		backupPuzzle = new Puzzle(this);
-		storeAllPossibleAnswers();
-		guessNext();
+		Puzzle backupPuzzle = new Puzzle(this);
+
+		if (guessNext(backupPuzzle)) {
+			System.out.println("SOLVED!");
+		} else {
+			System.err.println("IMPOSSIBLE!");
+		}
 
 	}
 
-	private boolean guessNext() {
+	private boolean guessNext(Puzzle previousPuzzle) {
 
 		if (getNumberSolved() == 81) {
 			Puzzle.puzzleSolved = true;
 			return true;
 		}
-		System.out.println("GUESS: ");
+		Puzzle tempPuzzle = new Puzzle(this);
 
 		Cell temp = null;
 		Cell tempCopy = null;
@@ -208,17 +135,16 @@ public class Puzzle {
 				break;
 			}
 		}
-
+		System.out.print("GUESS (" + index + "):\t"
+				+ temp.getPossibleSolutions() + ":\t");
+		// Puzzle tempPuzzle = new Puzzle(this);
 		boolean containsValidSoution = false;
 
+		// try each guess for the current cell
 		for (Integer possibleAnswer : tempCopy.getPossibleSolutions()) {
+
 			temp = this.cells[row][column];
-			Driver.errOut.println("CURRENT GUESS: " + index + ": "
-					+ possibleAnswer + "\t" + temp.getPossibleSolutions());
-			Puzzle tempPuzzle = new Puzzle(this);
-			Driver.errOut.println("guessing index: " + index);
-			System.out.println("\t" + index + "\t" + possibleAnswer);
-			addToCurrentSolution(index, possibleAnswer);
+			System.out.println(possibleAnswer);
 
 			if (!temp.setAnswer(possibleAnswer)) {
 				System.out.println("???");
@@ -226,69 +152,70 @@ public class Puzzle {
 
 			}
 			solve();
-			Driver.errOut.println(this);
+
 			if (getNumberSolved() == 81) {
 				Puzzle.puzzleSolved = true;
 				return true;
 			}
+
+			// if current guess doesn't cause problems, attempt next guess
 			if (checkValid()) {
 				System.out.println("VALID?");
+				System.out.println(this);
 
 				containsValidSoution = true;
-				if (guessNext()) {
-					break;
-				} else {
-					// return false;
 
-					revert(tempPuzzle);
-					this.printPossibleStuff();
-					System.out.println("???EXCLUDE: " + possibleAnswer);
-					exclude(index, possibleAnswer);
+				// if the next guess works
+				if (guessNext(previousPuzzle)) {
+					System.out.println("return true?:\n" + this);
+
+					// if the puzzle is solved, quit
+					if (getNumberSolved() == 81) {
+						Puzzle.puzzleSolved = true;
+						return true;
+					}
+
+					// return false;
+				} else {
+					/*
+					 * if none of the guesses in the next round worked, but this
+					 * guess didn't immediately fail, revert to before any
+					 * guesses
+					 */
+					revert(previousPuzzle);
+					// this.printPossibleStuff();
+					System.out.println("???EXCLUDE: " + index + " "
+							+ possibleAnswer);
+					// exclude(index, possibleAnswer);
 
 					// continue
 
 				}
 
 			} else {
-				// this.printPossibleStuff();
-				Driver.errOut
-						.println("=======================================");
+				System.out.println("=============================");
+				System.out.println("temp REVERT!");
+				System.out.println("pre:\n" + this);
+				/*
+				 * if the guess didn't work, go on to the next possible solution
+				 * for this cell
+				 */
 				revert(tempPuzzle);
-				// exclude(index, possibleAnswer);
-				// this.printPossibleStuff();
-				Driver.errOut.println("CURRENT GUESSES: " + currentGuesses);
-				Driver.errOut
-						.println("=======================================");
-				Driver.errOut.println("***EXCLUDE: " + possibleAnswer);
-				// temp.excludeSolution(possibleAnswer);
-				// exclude(index, possibleAnswer);
-				Driver.errOut
-						.println("=======================================");
-				this.printPossibleStuff();
-			}
 
-		}
+				// this.printPossibleStuff();
+			}// END IF-ELSE [CHECK VALID]
+
+		}// END FOR EACH SOLUTION
 
 		if (!containsValidSoution) {
-			Driver.errOut.println(">>>>>>>>>>>no valid solution for index: "
-					+ index + "<<<<<<<<<<<<");
-			revert(backupPuzzle);
-			// TODO: NEED TO FIGURE OUT HOW TO REVERT TO MOST RECENT UNEXHAUSTED
-			excludeMostRecentUnexhausted();
-			guessNext();
+			System.out.println("PREV REVERT");
+			revert(previousPuzzle);
+
+			return false;
 
 		}
 
-		return false;
-	}
-
-	private void exclude(int index, int ans) {
-		// TODO: IMPLEMENT
-		Driver.errOut.println("EXCLUDING FROM INDEX: " + index + ":\t" + ans);
-		int row = Cell.getRow(index);
-		int column = Cell.getColumn(index);
-		Cell temp = this.cells[row][column];
-		temp.excludeSolution(ans);
+		return true;
 	}
 
 	private void revert(Puzzle other) {
@@ -296,9 +223,9 @@ public class Puzzle {
 
 			return;
 		}
-		Driver.errOut.println("************reverting*****************");
+		System.out.println("************reverting*****************");
 		this.copyPuzzle(other);
-		Driver.errOut.println(this);
+		System.out.println(this);
 	}
 
 	public boolean checkValid() {

@@ -38,7 +38,7 @@ public class Driver {
 		 * + puzzle.getNumberSolved()); puzzle.run();
 		 */
 
-		for (int i = 0; i < 1; i++) {
+		for (int i = 2; i < 3; i++) {
 			int startIndex = 81 * i + i;
 			int endIndex = startIndex + 81;
 			System.out.println(input.substring(startIndex, endIndex));
