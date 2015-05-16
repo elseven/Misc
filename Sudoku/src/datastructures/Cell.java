@@ -2,6 +2,8 @@ package datastructures;
 
 import java.util.ArrayList;
 
+import main.Driver;
+
 public class Cell {
 
 	private boolean isSolved = false;
@@ -55,7 +57,7 @@ public class Cell {
 	public void excludeSolution(int toExclude) {
 		int tempIndex = this.possibleSolutions.indexOf(toExclude);
 
-		System.out.println("Pre: " + possibleSolutions + "\tremove: "
+		Driver.errOut.println("Pre: " + possibleSolutions + "\tremove: "
 				+ toExclude + " (at: " + tempIndex + ")");
 		if (tempIndex >= 0) {
 			this.possibleSolutions.remove(tempIndex);

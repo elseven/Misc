@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
+import main.Driver;
+
 public class Puzzle {
 	public Cell[][] cells = new Cell[9][9];
 	public static Scanner scanner = new Scanner(System.in);
+
 	public static boolean changed = false;
 	public static Puzzle backupPuzzle = null;
 	public static int guessCellIndex = -1;
@@ -36,7 +39,7 @@ public class Puzzle {
 		for (int i = 0; i < 81; i++) {
 			Cell temp = cells[i / 9][i % 9];
 			if (!temp.getIsSolved()) {
-				System.out.println(temp.getPossibleStuff(this));
+				Driver.errOut.println(temp.getPossibleStuff(this));
 			}
 
 		}
@@ -55,25 +58,25 @@ public class Puzzle {
 		while (this.getNumberSolved() < 81) {
 			solve();
 
-			// System.out.println("Solved: " + this.getNumberSolved());
+			// Driver.errOut.println("Solved: " + this.getNumberSolved());
 			if (this.getNumberSolved() == 81) {
 				break;
 			}
 			guess();
 
 		}
-		System.out
+		Driver.errOut
 				.println("******************************************************");
-		System.out
+		Driver.errOut
 				.println("**********************ANSWER:*************************");
-		System.out
+		Driver.errOut
 				.println("******************************************************");
-		System.out.println(this);
+		Driver.errOut.println(this);
 	}
 
 	public void solve() {
-		System.out.println("*************SOLVING*********************");
-		System.out.println(this);
+		Driver.errOut.println("*************SOLVING*********************");
+		Driver.errOut.println(this);
 
 		puzzleSolved = false;
 		int loops = 0;
@@ -90,15 +93,15 @@ public class Puzzle {
 			loops++;
 		}
 
-		System.out.println("(solved: " + getNumberSolved() + ")");
-		System.out.println(this);
+		Driver.errOut.println("(solved: " + getNumberSolved() + ")");
+		Driver.errOut.println(this);
 
 	}
 
 	private void excludeMostRecentUnexhausted() {
 		int index = getMostRecentUnexhausted();
 
-		// System.out.println("LEFT OFF INDEX: " + index);
+		// Driver.errOut.println("LEFT OFF INDEX: " + index);
 
 		ArrayList<Integer> failedGuesses = new ArrayList<Integer>();
 		for (Integer temp : currentGuesses.get(index)) {
@@ -109,12 +112,22 @@ public class Puzzle {
 			addToCurrentSolution(index, failed);
 			exclude(index, failed);
 		}
+
 		backupPuzzle = new Puzzle(this);
 	}
 
 	private int getMostRecentUnexhausted() {
+		/*
+		 * for (int i = 0; i < currentGuesses.size(); i++) { int index = (int)
+		 * currentGuesses.keySet().toArray()[i];
+		 * 
+		 * if (currentGuesses.get(index).size() < possibleGuesses.get(index)
+		 * .size()) { return index; }
+		 * 
+		 * }
+		 */
 
-		for (int i = 0; i < currentGuesses.size(); i++) {
+		for (int i = currentGuesses.size() - 1; i >= 0; i--) {
 			int index = (int) currentGuesses.keySet().toArray()[i];
 
 			if (currentGuesses.get(index).size() < possibleGuesses.get(index)
@@ -168,7 +181,8 @@ public class Puzzle {
 	}
 
 	private boolean guessNext() {
-		// System.out.println("PREV GUESS: " + prevIndex + ": " + prevGuess);
+		System.out.println("GUESS: ");
+
 		if (getNumberSolved() == 81) {
 			Puzzle.puzzleSolved = true;
 			return true;
@@ -196,10 +210,11 @@ public class Puzzle {
 
 		for (Integer possibleAnswer : tempCopy.getPossibleSolutions()) {
 			temp = this.cells[row][column];
-			System.out.println("CURRENT GUESS: " + index + ": "
+			Driver.errOut.println("CURRENT GUESS: " + index + ": "
 					+ possibleAnswer + "\t" + temp.getPossibleSolutions());
 			Puzzle tempPuzzle = new Puzzle(this);
-			System.out.println("guessing index: " + index);
+			Driver.errOut.println("guessing index: " + index);
+			System.out.println("\t" + index + "\t" + possibleAnswer);
 			addToCurrentSolution(index, possibleAnswer);
 
 			if (!temp.setAnswer(possibleAnswer)) {
@@ -208,7 +223,7 @@ public class Puzzle {
 
 			}
 			solve();
-			System.out.println(this);
+			Driver.errOut.println(this);
 			if (getNumberSolved() == 81) {
 				Puzzle.puzzleSolved = true;
 				return true;
@@ -233,23 +248,26 @@ public class Puzzle {
 
 			} else {
 				// this.printPossibleStuff();
-				System.out.println("=======================================");
+				Driver.errOut
+						.println("=======================================");
 				revert(tempPuzzle);
 				// exclude(index, possibleAnswer);
 				// this.printPossibleStuff();
-				System.out.println("CURRENT GUESSES: " + currentGuesses);
-				System.out.println("=======================================");
-				System.out.println("***EXCLUDE: " + possibleAnswer);
+				Driver.errOut.println("CURRENT GUESSES: " + currentGuesses);
+				Driver.errOut
+						.println("=======================================");
+				Driver.errOut.println("***EXCLUDE: " + possibleAnswer);
 				// temp.excludeSolution(possibleAnswer);
 				exclude(index, possibleAnswer);
-				System.out.println("=======================================");
+				Driver.errOut
+						.println("=======================================");
 				this.printPossibleStuff();
 			}
 
 		}
 
 		if (!containsValidSoution) {
-			System.out.println(">>>>>>>>>>>no valid solution for index: "
+			Driver.errOut.println(">>>>>>>>>>>no valid solution for index: "
 					+ index + "<<<<<<<<<<<<");
 			revert(backupPuzzle);
 			// TODO: NEED TO FIGURE OUT HOW TO REVERT TO MOST RECENT UNEXHAUSTED
@@ -263,7 +281,7 @@ public class Puzzle {
 
 	private void exclude(int index, int ans) {
 		// TODO: IMPLEMENT
-		System.out.println("EXCLUDING FROM INDEX: " + index + ":\t" + ans);
+		Driver.errOut.println("EXCLUDING FROM INDEX: " + index + ":\t" + ans);
 		int row = Cell.getRow(index);
 		int column = Cell.getColumn(index);
 		Cell temp = this.cells[row][column];
@@ -275,9 +293,9 @@ public class Puzzle {
 
 			return;
 		}
-		System.out.println("************reverting*****************");
+		Driver.errOut.println("************reverting*****************");
 		this.copyPuzzle(other);
-		System.out.println(this);
+		Driver.errOut.println(this);
 	}
 
 	public boolean checkValid() {
@@ -329,12 +347,12 @@ public class Puzzle {
 		for (int i = 0; i < 81; i++) {
 			int row = Cell.getRow(i);
 			int column = Cell.getColumn(i);
-			// System.out.println(row+","+column);
+			// Driver.errOut.println(row+","+column);
 			if (this.cells[row][column].getIsSolved()) {
 				count++;
 			}
 		}
-		// System.out.println("solved: " + count);
+		// Driver.errOut.println("solved: " + count);
 		return count;
 
 	}
