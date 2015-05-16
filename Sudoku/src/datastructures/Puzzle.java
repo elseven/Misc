@@ -220,10 +220,13 @@ public class Puzzle {
 				if (guessNext()) {
 					break;
 				} else {
+					// return false;
+
 					revert(tempPuzzle);
 					this.printPossibleStuff();
 					System.out.println("???EXCLUDE: " + possibleAnswer);
 					exclude(index, possibleAnswer);
+
 					// continue
 
 				}
