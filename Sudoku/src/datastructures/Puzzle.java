@@ -17,10 +17,11 @@ public class Puzzle {
 	public static boolean guessingHasStarted = false;
 	private static int maxLoopCount = 500;
 
-	public static HashMap<Integer, ArrayList<Integer>> currentGuesses = new HashMap<Integer, ArrayList<Integer>>();
-	public static HashMap<Integer, ArrayList<Integer>> possibleGuesses = new HashMap<Integer, ArrayList<Integer>>();
+	public static HashMap<Integer, ArrayList<Integer>> currentGuesses = new HashMap<Integer, ArrayList<Integer>>(
+			81);
+	public static HashMap<Integer, ArrayList<Integer>> possibleGuesses = new HashMap<Integer, ArrayList<Integer>>(
+			81);
 
-	public static ArrayList<Integer> rootGuesses = new ArrayList<Integer>();
 	public static int guessCount = 0;
 	private static boolean puzzleSolved = false;
 	public static int rootIndex = -1;
@@ -103,7 +104,7 @@ public class Puzzle {
 
 		// Driver.errOut.println("LEFT OFF INDEX: " + index);
 
-		ArrayList<Integer> failedGuesses = new ArrayList<Integer>();
+		ArrayList<Integer> failedGuesses = new ArrayList<Integer>(9);
 		for (Integer temp : currentGuesses.get(index)) {
 			failedGuesses.add(temp);
 		}
@@ -141,16 +142,18 @@ public class Puzzle {
 	}
 
 	private void addToCurrentSolution(int index, int possibleAnswer) {
+		System.out.println("******");
 		if (currentGuesses.containsKey(index)) {
 			if (currentGuesses.get(index).indexOf(possibleAnswer) < 0) {
 				currentGuesses.get(index).add(possibleAnswer);
+			} else {
+				System.out.println("REPEAT!");
 			}
 
 		} else {
-			ArrayList<Integer> tempList = new ArrayList<Integer>();
+			ArrayList<Integer> tempList = new ArrayList<Integer>(9);
 			tempList.add(possibleAnswer);
 			currentGuesses.put(index, tempList);
-
 		}
 	}
 
@@ -181,12 +184,12 @@ public class Puzzle {
 	}
 
 	private boolean guessNext() {
-		System.out.println("GUESS: ");
 
 		if (getNumberSolved() == 81) {
 			Puzzle.puzzleSolved = true;
 			return true;
 		}
+		System.out.println("GUESS: ");
 
 		Cell temp = null;
 		Cell tempCopy = null;
@@ -218,7 +221,7 @@ public class Puzzle {
 			addToCurrentSolution(index, possibleAnswer);
 
 			if (!temp.setAnswer(possibleAnswer)) {
-
+				System.out.println("???");
 				continue;
 
 			}
@@ -258,7 +261,7 @@ public class Puzzle {
 						.println("=======================================");
 				Driver.errOut.println("***EXCLUDE: " + possibleAnswer);
 				// temp.excludeSolution(possibleAnswer);
-				exclude(index, possibleAnswer);
+				// exclude(index, possibleAnswer);
 				Driver.errOut
 						.println("=======================================");
 				this.printPossibleStuff();

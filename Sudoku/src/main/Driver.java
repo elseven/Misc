@@ -28,24 +28,27 @@ public class Driver {
 			e.printStackTrace();
 		}
 		errOut.println("START!");
-		int startIndex = 81 * puzzleIndex + puzzleIndex;
-		int endIndex = startIndex + 81;
-		System.out.println(input.substring(startIndex, endIndex));
-		Puzzle puzzle = new Puzzle(input.substring(startIndex, endIndex));
-
-		System.out.println(puzzle);
-		System.out.println("Originally solved: " + puzzle.getNumberSolved());
-		puzzle.run();
-
 		/*
-		 * for (int i = 0; i < 17; i++) { int startIndex = 81 * i + i; int
-		 * endIndex = startIndex + 81;
-		 * System.out.println(input.substring(startIndex, endIndex)); Puzzle
-		 * puzzle = new Puzzle(input.substring(startIndex, endIndex));
+		 * int startIndex = 81 * puzzleIndex + puzzleIndex; int endIndex =
+		 * startIndex + 81; System.out.println(input.substring(startIndex,
+		 * endIndex)); Puzzle puzzle = new Puzzle(input.substring(startIndex,
+		 * endIndex));
 		 * 
-		 * System.out.println(puzzle); System.out .println("Originally solved: "
-		 * + puzzle.getNumberSolved()); puzzle.run(); }
+		 * System.out.println(puzzle); System.out.println("Originally solved: "
+		 * + puzzle.getNumberSolved()); puzzle.run();
 		 */
+
+		for (int i = 18; i < 22; i++) {
+			int startIndex = 81 * i + i;
+			int endIndex = startIndex + 81;
+			System.out.println(input.substring(startIndex, endIndex));
+			Puzzle puzzle = new Puzzle(input.substring(startIndex, endIndex));
+
+			System.out.println(puzzle);
+			System.out
+					.println("Originally solved: " + puzzle.getNumberSolved());
+			puzzle.run();
+		}
 
 	}
 
