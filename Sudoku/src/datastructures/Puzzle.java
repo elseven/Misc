@@ -128,7 +128,7 @@ public class Puzzle {
 		 * }
 		 */
 
-		for (int i = currentGuesses.size() - 1; i >= 0; i--) {
+		for (int i = 0; i < currentGuesses.size(); i++) {
 			int index = (int) currentGuesses.keySet().toArray()[i];
 
 			if (currentGuesses.get(index).size() < possibleGuesses.get(index)
