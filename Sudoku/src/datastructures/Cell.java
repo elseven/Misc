@@ -2,8 +2,6 @@ package datastructures;
 
 import java.util.ArrayList;
 
-import main.Driver;
-
 public class Cell {
 
 	private boolean isSolved = false;
@@ -50,22 +48,6 @@ public class Cell {
 		isSolved = true;
 		possibleSolutions.clear();
 		return true;
-
-	}
-
-	// TODO: USED THIS!!!!
-	public void excludeSolution(int toExclude) {
-		int tempIndex = this.possibleSolutions.indexOf(toExclude);
-
-		Driver.errOut.println("Pre: " + possibleSolutions + "\tremove: "
-				+ toExclude + " (at: " + tempIndex + ")");
-		if (tempIndex >= 0) {
-			this.possibleSolutions.remove(tempIndex);
-			Puzzle.changed = true;
-		}
-		if (this.possibleSolutions.size() == 1) {
-			// setAnswer(this.possibleSolutions.get(0));
-		}
 
 	}
 
@@ -197,6 +179,26 @@ public class Cell {
 
 		return isSolved;
 
+	}
+
+	// TODO: IMPL NAKED TWINS
+	/*
+	 * two squares in the same unit that both have the same two possible digits.
+	 * Given {'A5': '26', 'A6':'26', ...}, we can conclude that 2 and 6 must be
+	 * in A5 and A6 (although we don't know which is where), and we can
+	 * therefore eliminate 2 and 6 from every other square in the A row unit.
+	 */
+	private boolean nakedTwins(Puzzle puzzle) {
+		if (this.isSolved) {
+			return true;
+		}
+
+		int row = getRow(index);
+		int column = getColumn(index);
+		int square = getSquare(index);
+		Cell other;
+
+		return false;
 	}
 
 	private boolean combinedOverlap(Puzzle puzzle) {

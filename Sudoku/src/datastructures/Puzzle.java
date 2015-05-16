@@ -15,7 +15,7 @@ public class Puzzle {
 	public static int guessCellIndex = -1;
 	public static int guessAnswer = -1;
 	public static boolean guessingHasStarted = false;
-	private static int maxLoopCount = 500;
+	private static int maxLoopCount = 1000;
 
 	public static HashMap<Integer, ArrayList<Integer>> currentGuesses = new HashMap<Integer, ArrayList<Integer>>(
 			81);
@@ -40,7 +40,7 @@ public class Puzzle {
 		for (int i = 0; i < 81; i++) {
 			Cell temp = cells[i / 9][i % 9];
 			if (!temp.getIsSolved()) {
-				Driver.errOut.println(temp.getPossibleStuff(this));
+				// Driver.errOut.println(temp.getPossibleStuff(this));
 			}
 
 		}
@@ -56,7 +56,6 @@ public class Puzzle {
 
 		solve();
 
-		// Driver.errOut.println("Solved: " + this.getNumberSolved());
 		if (this.getNumberSolved() < 81) {
 			guess();
 		}
@@ -78,10 +77,6 @@ public class Puzzle {
 	}
 
 	public void solve() {
-		if (Driver.debug) {
-			Driver.errOut.println("*************SOLVING*********************");
-			Driver.errOut.println(this);
-		}
 
 		puzzleSolved = false;
 		int loops = 0;
@@ -96,11 +91,6 @@ public class Puzzle {
 				puzzleSolved = puzzleSolved && temp;
 			}
 			loops++;
-		}
-
-		if (Driver.debug) {
-			Driver.errOut.println("(solved: " + getNumberSolved() + ")");
-			Driver.errOut.println(this);
 		}
 
 	}
@@ -121,7 +111,6 @@ public class Puzzle {
 
 		Cell temp = null;
 		Cell tempCopy = null;
-		int index = -1;
 		int row = -1;
 		int column = -1;
 		// find the first unsolved cell
@@ -132,7 +121,6 @@ public class Puzzle {
 			temp = this.cells[row][column];
 			tempCopy = new Cell(temp);
 			if (!temp.getIsSolved()) {
-				index = i;
 				break;
 			}
 		}
@@ -283,12 +271,12 @@ public class Puzzle {
 		for (int i = 0; i < 81; i++) {
 			int row = Cell.getRow(i);
 			int column = Cell.getColumn(i);
-			// Driver.errOut.println(row+","+column);
+
 			if (this.cells[row][column].getIsSolved()) {
 				count++;
 			}
 		}
-		// Driver.errOut.println("solved: " + count);
+
 		return count;
 
 	}
