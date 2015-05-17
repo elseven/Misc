@@ -27,6 +27,19 @@ public class Cell {
 		}
 	}
 
+	public Cell(int index, int ans) {
+		this(index);
+
+		// If it is already filled in, there are no possible solutions and the
+		// answer is ans
+		if (ans != 46) {
+			this.index = index;
+
+			this.setAnswer(ans - 48);
+		}
+
+	}
+
 	public boolean getIsSolved() {
 		return isSolved;
 	}
@@ -53,19 +66,6 @@ public class Cell {
 
 	public ArrayList<Integer> getPossibleSolutions() {
 		return possibleSolutions;
-	}
-
-	public Cell(int index, int ans) {
-		this(index);
-
-		// If it is already filled in, there are no possible solutions and the
-		// answer is ans
-		if (ans != 46) {
-			this.index = index;
-
-			this.setAnswer(ans - 48);
-		}
-
 	}
 
 	public static int getRow(int index) {
@@ -101,7 +101,14 @@ public class Cell {
 		return s;
 	}
 
-	public boolean basicUpdate(Puzzle puzzle) {
+	private void excludePossibleSolution(int ans) {
+		int index = this.possibleSolutions.indexOf(ans);
+		if (index >= 0) {
+			this.possibleSolutions.remove(index);
+		}
+	}
+
+	private boolean refreshPossibleSolutions(Puzzle puzzle) {
 
 		if (this.isSolved) {
 			// System.out.println("SOLVED????");
@@ -168,17 +175,15 @@ public class Cell {
 
 	public boolean update(Puzzle puzzle) {
 
-		basicUpdate(puzzle);
-		rowOverlap(puzzle);
-		basicUpdate(puzzle);
-		columnOverlap(puzzle);
-		basicUpdate(puzzle);
-		squareOverlap(puzzle);
-		basicUpdate(puzzle);
-		combinedOverlap(puzzle);
+		return rowOverlap(puzzle) || columnOverlap(puzzle)
+				|| squareOverlap(puzzle) || combinedOverlap(puzzle)
+				|| nakedTwins(puzzle);
 
-		return isSolved;
+	}
 
+	private boolean nakedTwins(Puzzle puzzle) {
+		return nakedTwinsColumn(puzzle) || nakedTwinsRow(puzzle)
+				|| nakedTwinsSquare(puzzle);
 	}
 
 	// TODO: IMPL NAKED TWINS
@@ -188,23 +193,157 @@ public class Cell {
 	 * in A5 and A6 (although we don't know which is where), and we can
 	 * therefore eliminate 2 and 6 from every other square in the A row unit.
 	 */
-	private boolean nakedTwins(Puzzle puzzle) {
+	private boolean nakedTwinsColumn(Puzzle puzzle) {
 		if (this.isSolved) {
 			return true;
 		}
+		refreshPossibleSolutions(puzzle);
 
 		int row = getRow(index);
 		int column = getColumn(index);
+
+		Cell other;
+
+		if (possibleSolutions.size() == 2) {
+
+			// for each cell in the same column
+			for (int i = 0; i < 9; i++) {
+				if (i == row) {
+					continue;
+				}
+				other = puzzle.cells[i][column];
+
+				if (!other.getIsSolved() && other.possibleSolutions.size() == 2) {
+					if (other.possibleSolutions.containsAll(possibleSolutions)) {
+						for (int j = 0; j < 9; j++) {
+							if (j == row || j == i) {
+								continue;
+							}
+							Cell temp = puzzle.cells[j][column];
+							if (!temp.getIsSolved()) {
+								System.err.println("HI COLUMN!");
+								temp.excludePossibleSolution(possibleSolutions
+										.get(0));
+								temp.excludePossibleSolution(possibleSolutions
+										.get(1));
+							}
+
+						}
+
+					}
+
+				}
+
+			}
+		}
+
+		return possibleSolutions.isEmpty();
+	}
+
+	private boolean nakedTwinsRow(Puzzle puzzle) {
+		if (this.isSolved) {
+			return true;
+		}
+		refreshPossibleSolutions(puzzle);
+
+		int row = getRow(index);
+		int column = getColumn(index);
+
+		Cell other;
+
+		if (possibleSolutions.size() == 2) {
+
+			// for each cell in the same column
+			for (int i = 0; i < 9; i++) {
+				if (i == column) {
+					continue;
+				}
+				other = puzzle.cells[row][i];
+
+				if (!other.getIsSolved() && other.possibleSolutions.size() == 2) {
+					if (other.possibleSolutions.containsAll(possibleSolutions)) {
+						for (int j = 0; j < 9; j++) {
+							if (j == column || j == i) {
+								continue;
+							}
+							Cell temp = puzzle.cells[row][j];
+							if (!temp.getIsSolved()) {
+								System.err.println("HI ROW!");
+								temp.excludePossibleSolution(possibleSolutions
+										.get(0));
+								temp.excludePossibleSolution(possibleSolutions
+										.get(1));
+							}
+
+						}
+
+					}
+
+				}
+
+			}
+		}
+
+		return possibleSolutions.isEmpty();
+	}
+
+	private boolean nakedTwinsSquare(Puzzle puzzle) {
+		if (this.isSolved) {
+			return true;
+		}
+		refreshPossibleSolutions(puzzle);
+
 		int square = getSquare(index);
 		Cell other;
 
-		return false;
+		if (possibleSolutions.size() == 2) {
+
+			for (int i = 0; i < 81; i++) {
+				if (getSquare(i) == square) {
+					int otherRow = getRow(i);
+					int otherColumn = getColumn(i);
+
+					if (i == index) {
+						continue;
+					}
+					other = puzzle.cells[otherRow][otherColumn];
+
+					if (!other.isSolved && other.possibleSolutions.size() == 2) {
+						if (other.possibleSolutions
+								.containsAll(possibleSolutions)) {
+
+							for (int j = 0; j < 81; j++) {
+								int tempSquare = getSquare(j);
+								int tempRow = getRow(j);
+								int tempColumn = getColumn(j);
+								if (tempSquare != square || j == index
+										|| j == i) {
+									continue;
+								}
+								Cell temp = puzzle.cells[tempRow][tempColumn];
+								if (!temp.getIsSolved()) {
+									System.err.println("HI SQUARE!");
+									temp.excludePossibleSolution(possibleSolutions
+											.get(0));
+									temp.excludePossibleSolution(possibleSolutions
+											.get(1));
+								}
+
+							}
+						}
+					}
+				}
+
+			}
+		}
+		return possibleSolutions.isEmpty();
 	}
 
 	private boolean combinedOverlap(Puzzle puzzle) {
 		if (this.isSolved) {
 			return true;
 		}
+		refreshPossibleSolutions(puzzle);
 
 		int row = getRow(index);
 		int column = getColumn(index);
@@ -285,14 +424,20 @@ public class Cell {
 
 	}
 
+	/**
+	 * 
+	 * @param puzzle
+	 * @return
+	 */
 	private boolean columnOverlap(Puzzle puzzle) {
 		if (this.isSolved) {
 			return true;
 		}
+		refreshPossibleSolutions(puzzle);
 
 		int row = getRow(index);
 		int column = getColumn(index);
-		// int square = getSquare(index);
+
 		Cell other;
 
 		ArrayList<Integer> uniquePossibleSolutions = new ArrayList<Integer>();
@@ -333,7 +478,7 @@ public class Cell {
 		if (this.isSolved) {
 			return true;
 		}
-
+		refreshPossibleSolutions(puzzle);
 		int row = getRow(index);
 		int column = getColumn(index);
 		// int square = getSquare(index);
@@ -379,6 +524,7 @@ public class Cell {
 		if (this.isSolved) {
 			return true;
 		}
+		refreshPossibleSolutions(puzzle);
 
 		int row = getRow(index);
 		int column = getColumn(index);
