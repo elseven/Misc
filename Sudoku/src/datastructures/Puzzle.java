@@ -1,7 +1,6 @@
 package datastructures;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Scanner;
 
 import main.Driver;
@@ -11,21 +10,16 @@ public class Puzzle {
 	public static Scanner scanner = new Scanner(System.in);
 
 	public static boolean changed = false;
-	// public static Puzzle backupPuzzle = null;
-	public static int guessCellIndex = -1;
-	public static int guessAnswer = -1;
-	public static boolean guessingHasStarted = false;
 	private static int maxLoopCount = 1000;
 
-	public static HashMap<Integer, ArrayList<Integer>> currentGuesses = new HashMap<Integer, ArrayList<Integer>>(
-			81);
-	public static HashMap<Integer, ArrayList<Integer>> possibleGuesses = new HashMap<Integer, ArrayList<Integer>>(
-			81);
-
-	public static int guessCount = 0;
 	private static boolean puzzleSolved = false;
-	public static int rootIndex = -1;
 
+	/**
+	 * Copy constructor. Copy cells from another puzzle to this one.
+	 * 
+	 * @param other
+	 *            the puzzle to copy.
+	 */
 	public Puzzle(Puzzle other) {
 		copyPuzzle(other);
 	}
@@ -36,19 +30,10 @@ public class Puzzle {
 		}
 	}
 
-	public void printPossibleStuff() {
-		for (int i = 0; i < 81; i++) {
-			Cell temp = cells[i / 9][i % 9];
-			if (!temp.getIsSolved()) {
-				// Driver.errOut.println(temp.getPossibleStuff(this));
-			}
-
-		}
-	}
-
 	public void copyPuzzle(Puzzle other) {
 		for (int i = 0; i < 81; i++) {
-			this.cells[i / 9][i % 9] = new Cell(other.cells[i / 9][i % 9]);
+			this.cells[Cell.getRow(i)][Cell.getColumn(i)] = new Cell(
+					other.cells[Cell.getRow(i)][Cell.getColumn(i)]);
 		}
 	}
 
@@ -87,7 +72,7 @@ public class Puzzle {
 			puzzleSolved = true;
 
 			for (int i = 0; i < 81; i++) {
-				boolean temp = cells[i / 9][i % 9].update(this);
+				boolean temp = updateCellAt(i);
 				puzzleSolved = puzzleSolved && temp;
 			}
 			loops++;
@@ -95,6 +80,474 @@ public class Puzzle {
 
 	}
 
+	private Cell getCellAt(int index) {
+		int row = Cell.getRow(index);
+		int column = Cell.getColumn(index);
+		return this.cells[row][column];
+	}
+
+	public boolean updateCellAt(int index) {
+
+		return rowOverlap(index) || columnOverlap(index)
+				|| squareOverlap(index) || combinedOverlap(index)
+				|| nakedTwins(index);
+
+	}
+
+	private boolean refreshPossibleSolutions(int index) {
+
+		Cell cell = getCellAt(index);
+
+		if (cell.getIsSolved()) {
+
+			return true;
+		}
+
+		int row = Cell.getRow(index);
+		int column = Cell.getColumn(index);
+		int square = Cell.getSquare(index);
+		Cell other = null;
+		// for each cell in the same row
+		for (int i = 0; i < 9; i++) {
+			other = this.cells[row][i];
+			if (other.getIsSolved()) {
+				if (cell.getPossibleSolutions().contains(other.getAnswer())) {
+					cell.excludePossibleSolution(other.getAnswer());
+					Puzzle.changed = true;
+				}
+			}
+		}
+
+		// for each cell in the same column
+		for (int i = 0; i < 9; i++) {
+			other = this.cells[i][column];
+			if (other.getIsSolved()) {
+				if (cell.getPossibleSolutions().contains(other.getAnswer())) {
+					cell.excludePossibleSolution(other.getAnswer());
+					Puzzle.changed = true;
+				}
+			}
+		}
+
+		// for each cell in the same square
+		for (int i = 0; i < 81; i++) {
+			if (Cell.getSquare(i) == square) {
+				int tempRow = Cell.getRow(i);
+				int tempColumn = Cell.getColumn(i);
+				other = this.cells[tempRow][tempColumn];
+				if (other.getIsSolved()) {
+					if (cell.getPossibleSolutions().contains(other.getAnswer())) {
+
+						cell.excludePossibleSolution(other.getAnswer());
+
+						Puzzle.changed = true;
+					}
+				}
+
+			}
+		}
+
+		if (cell.getPossibleSolutions().size() == 1) {
+			cell.setAnswer(cell.getPossibleSolutions().get(0));
+		}
+
+		return cell.getPossibleSolutions().isEmpty();
+
+	}
+
+	/**
+	 * two squares in the same unit that both have the same two possible digits.
+	 * Given {'A5': '26', 'A6':'26', ...}, we can conclude that 2 and 6 must be
+	 * in A5 and A6 (although we don't know which is where), and we can
+	 * therefore eliminate 2 and 6 from every other square in the A row unit.
+	 */
+	private boolean nakedTwins(int index) {
+		return nakedTwinsColumn(index) || nakedTwinsRow(index)
+				|| nakedTwinsSquare(index);
+	}
+
+	private boolean nakedTwinsColumn(int index) {
+		Cell cell = getCellAt(index);
+
+		if (cell.getIsSolved()) {
+			return true;
+		}
+
+		int row = Cell.getRow(index);
+		int column = Cell.getColumn(index);
+		Cell other = null;
+
+		refreshPossibleSolutions(index);
+
+		if (cell.getPossibleSolutions().size() == 2) {
+
+			// for each cell in the same column
+			for (int i = 0; i < 9; i++) {
+				if (i == row) {
+					continue;
+				}
+				other = this.cells[i][column];
+
+				if (!other.getIsSolved()
+						&& other.getPossibleSolutions().size() == 2) {
+					if (other.getPossibleSolutions().containsAll(
+							cell.getPossibleSolutions())) {
+						for (int j = 0; j < 9; j++) {
+							if (j == row || j == i) {
+								continue;
+							}
+							Cell temp = this.cells[j][column];
+							if (!temp.getIsSolved()) {
+								System.err.println("HI COLUMN!");
+								temp.excludePossibleSolution(cell
+										.getPossibleSolutions().get(0));
+								temp.excludePossibleSolution(cell
+										.getPossibleSolutions().get(1));
+							}
+
+						}
+
+					}
+
+				}
+
+			}
+		}
+
+		return cell.getPossibleSolutions().isEmpty();
+	}
+
+	private boolean nakedTwinsRow(int index) {
+		Cell cell = getCellAt(index);
+
+		if (cell.getIsSolved()) {
+			return true;
+		}
+
+		int row = Cell.getRow(index);
+		int column = Cell.getColumn(index);
+		Cell other = null;
+
+		refreshPossibleSolutions(index);
+
+		if (cell.getPossibleSolutions().size() == 2) {
+
+			// for each cell in the same column
+			for (int i = 0; i < 9; i++) {
+				if (i == column) {
+					continue;
+				}
+				other = this.cells[row][i];
+
+				if (!other.getIsSolved()
+						&& other.getPossibleSolutions().size() == 2) {
+					if (other.getPossibleSolutions().containsAll(
+							cell.getPossibleSolutions())) {
+						for (int j = 0; j < 9; j++) {
+							if (j == column || j == i) {
+								continue;
+							}
+							Cell temp = this.cells[row][j];
+							if (!temp.getIsSolved()) {
+								System.err.println("HI ROW!");
+								temp.excludePossibleSolution(cell
+										.getPossibleSolutions().get(0));
+								temp.excludePossibleSolution(cell
+										.getPossibleSolutions().get(1));
+							}
+
+						}
+
+					}
+
+				}
+
+			}
+		}
+
+		return cell.getPossibleSolutions().isEmpty();
+	}
+
+	private boolean nakedTwinsSquare(int index) {
+		Cell cell = getCellAt(index);
+
+		if (cell.getIsSolved()) {
+			return true;
+		}
+
+		int square = Cell.getSquare(index);
+		Cell other = null;
+		refreshPossibleSolutions(index);
+
+		if (cell.getPossibleSolutions().size() == 2) {
+
+			for (int i = 0; i < 81; i++) {
+				if (Cell.getSquare(i) == square) {
+					int otherRow = Cell.getRow(i);
+					int otherColumn = Cell.getColumn(i);
+
+					if (i == index) {
+						continue;
+					}
+					other = this.cells[otherRow][otherColumn];
+
+					if (!other.getIsSolved()
+							&& other.getPossibleSolutions().size() == 2) {
+						if (other.getPossibleSolutions().containsAll(
+								cell.getPossibleSolutions())) {
+
+							for (int j = 0; j < 81; j++) {
+								int tempSquare = Cell.getSquare(j);
+								int tempRow = Cell.getRow(j);
+								int tempColumn = Cell.getColumn(j);
+								if (tempSquare != square || j == index
+										|| j == i) {
+									continue;
+								}
+								Cell temp = this.cells[tempRow][tempColumn];
+								if (!temp.getIsSolved()) {
+									System.err.println("HI SQUARE!");
+									temp.excludePossibleSolution(cell
+											.getPossibleSolutions().get(0));
+									temp.excludePossibleSolution(cell
+											.getPossibleSolutions().get(1));
+								}
+
+							}
+						}
+					}
+				}
+
+			}
+		}
+		return cell.getPossibleSolutions().isEmpty();
+	}
+
+	private boolean combinedOverlap(int index) {
+		Cell cell = getCellAt(index);
+
+		if (cell.getIsSolved()) {
+			return true;
+		}
+
+		int row = Cell.getRow(index);
+		int column = Cell.getColumn(index);
+		int square = Cell.getSquare(index);
+		Cell other = null;
+		refreshPossibleSolutions(index);
+
+		ArrayList<Integer> uniquePossibleSolutions = new ArrayList<Integer>();
+
+		for (Integer sol : cell.getPossibleSolutions()) {
+			uniquePossibleSolutions.add(sol);
+		}
+
+		// for each cell in the same column
+		for (int i = 0; i < 9; i++) {
+			if (i == row) {
+				continue;
+			}
+			other = this.cells[i][column];
+
+			if (!other.getIsSolved()) {
+				for (Integer sol : other.getPossibleSolutions()) {
+					int tempIndex = uniquePossibleSolutions.indexOf(sol);
+					if (tempIndex >= 0) {
+						uniquePossibleSolutions.remove(tempIndex);
+					}
+				}
+
+			}
+
+		}
+
+		// for each cell in the same row
+		for (int i = 0; i < 9; i++) {
+			// if the other cell is not solved, compare the possible solutions
+			if (i == column) {
+				continue;
+			}
+			other = this.cells[row][i];
+			if (!other.getIsSolved()) {
+				for (Integer sol : other.getPossibleSolutions()) {
+					int tempIndex = uniquePossibleSolutions.indexOf(sol);
+					if (tempIndex >= 0) {
+						uniquePossibleSolutions.remove(tempIndex);
+					}
+				}
+
+			}
+		}
+
+		// for each cell in the same square
+		for (int i = 0; i < 81; i++) {
+			if (Cell.getSquare(i) == square) {
+				int tempRow = Cell.getRow(i);
+				int tempColumn = Cell.getColumn(i);
+				if (tempRow == row && tempColumn == column) {
+					continue;
+				}
+				other = this.cells[tempRow][tempColumn];
+
+				if (!other.getIsSolved()) {
+					for (Integer sol : other.getPossibleSolutions()) {
+						int tempIndex = uniquePossibleSolutions.indexOf(sol);
+						if (tempIndex >= 0) {
+							uniquePossibleSolutions.remove(tempIndex);
+						}
+					}
+				}
+			}
+		}
+
+		if (uniquePossibleSolutions.size() == 1) {
+			cell.setAnswer(uniquePossibleSolutions.get(0));
+		}
+		return cell.getPossibleSolutions().isEmpty();
+
+	}
+
+	/**
+	 * 
+	 * @param puzzle
+	 * @return
+	 */
+	private boolean columnOverlap(int index) {
+		Cell cell = getCellAt(index);
+
+		if (cell.getIsSolved()) {
+			return true;
+		}
+
+		int row = Cell.getRow(index);
+		int column = Cell.getColumn(index);
+		Cell other = null;
+		refreshPossibleSolutions(index);
+
+		ArrayList<Integer> uniquePossibleSolutions = new ArrayList<Integer>();
+
+		for (Integer sol : cell.getPossibleSolutions()) {
+			uniquePossibleSolutions.add(sol);
+		}
+
+		// for each cell in the same column
+		for (int i = 0; i < 9; i++) {
+			if (i == row) {
+				continue;
+			}
+			other = this.cells[i][column];
+
+			if (!other.getIsSolved()) {
+				for (Integer sol : other.getPossibleSolutions()) {
+					int tempIndex = uniquePossibleSolutions.indexOf(sol);
+					if (tempIndex >= 0) {
+						uniquePossibleSolutions.remove(tempIndex);
+					}
+				}
+
+			}
+
+		}
+
+		if (uniquePossibleSolutions.size() == 1) {
+			cell.setAnswer(uniquePossibleSolutions.get(0));
+		}
+		return cell.getPossibleSolutions().isEmpty();
+	}
+
+	private boolean rowOverlap(int index) {
+		Cell cell = getCellAt(index);
+
+		if (cell.getIsSolved()) {
+			return true;
+		}
+
+		int row = Cell.getRow(index);
+		int column = Cell.getColumn(index);
+		Cell other = null;
+
+		refreshPossibleSolutions(index);
+
+		ArrayList<Integer> uniquePossibleSolutions = new ArrayList<Integer>();
+
+		for (Integer sol : cell.getPossibleSolutions()) {
+			uniquePossibleSolutions.add(sol);
+		}
+
+		// for each cell in the same row
+		for (int i = 0; i < 9; i++) {
+			// if the other cell is not solved, compare the possible solutions
+			if (i == column) {
+				continue;
+			}
+			other = this.cells[row][i];
+			if (!other.getIsSolved()) {
+
+				for (Integer sol : other.getPossibleSolutions()) {
+					int tempIndex = uniquePossibleSolutions.indexOf(sol);
+
+					if (tempIndex >= 0) {
+
+						uniquePossibleSolutions.remove(tempIndex);
+
+					}
+				}
+
+			}
+		}
+
+		if (uniquePossibleSolutions.size() == 1) {
+			cell.setAnswer(uniquePossibleSolutions.get(0));
+		}
+		return cell.getPossibleSolutions().isEmpty();
+	}
+
+	private boolean squareOverlap(int index) {
+		Cell cell = getCellAt(index);
+
+		if (cell.getIsSolved()) {
+			return true;
+		}
+
+		int row = Cell.getRow(index);
+		int column = Cell.getColumn(index);
+		int square = Cell.getSquare(index);
+		Cell other = null;
+		refreshPossibleSolutions(index);
+
+		ArrayList<Integer> uniquePossibleSolutions = new ArrayList<Integer>();
+
+		for (Integer sol : cell.getPossibleSolutions()) {
+			uniquePossibleSolutions.add(sol);
+		}
+		// for each cell in the same square
+		for (int i = 0; i < 81; i++) {
+			if (Cell.getSquare(i) == square) {
+				int tempRow = Cell.getRow(i);
+				int tempColumn = Cell.getColumn(i);
+				if (tempRow == row && tempColumn == column) {
+					continue;
+				}
+				other = this.cells[tempRow][tempColumn];
+
+				if (!other.getIsSolved()) {
+					for (Integer sol : other.getPossibleSolutions()) {
+						int tempIndex = uniquePossibleSolutions.indexOf(sol);
+						if (tempIndex >= 0) {
+							uniquePossibleSolutions.remove(tempIndex);
+						}
+					}
+				}
+			}
+		}
+
+		if (uniquePossibleSolutions.size() == 1) {
+			cell.setAnswer(uniquePossibleSolutions.get(0));
+		}
+		return cell.getPossibleSolutions().isEmpty();
+	}
+
+	// ===============================================================//
 	private void guess() {
 		Puzzle backupPuzzle = new Puzzle(this);
 		guessNext(backupPuzzle);

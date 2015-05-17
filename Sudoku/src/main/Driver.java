@@ -9,7 +9,7 @@ import java.io.PrintStream;
 import datastructures.Puzzle;
 
 public class Driver {
-	public static boolean debug = true;
+	public static boolean debug = false;
 
 	public static PrintStream errOut = null;
 
