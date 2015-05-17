@@ -2,6 +2,8 @@ package datastructures;
 
 import java.util.ArrayList;
 
+import main.Driver;
+
 public class Cell {
 
 	private boolean isSolved = false;
@@ -54,7 +56,10 @@ public class Cell {
 
 	public boolean setAnswer(int answer) {
 		if (!possibleSolutions.contains(answer)) {
-			System.err.println("DOES NOT CONTAIN ANSWER!!!");
+			if (Driver.debug) {
+				System.err.println("DOES NOT CONTAIN ANSWER!!!");
+			}
+
 			return false;
 		}
 		this.answer = answer;

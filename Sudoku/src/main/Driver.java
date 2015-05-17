@@ -16,7 +16,7 @@ public class Driver {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
-		String path = "./Puzzles/P1.txt";
+		String path = "./Puzzles/HARD.txt";
 
 		// errOut.println("START!");
 		try (BufferedReader br = new BufferedReader(new FileReader(path))) {

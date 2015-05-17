@@ -10,9 +10,8 @@ public class Puzzle {
 	public static Scanner scanner = new Scanner(System.in);
 
 	public static boolean changed = false;
-	private static int maxLoopCount = 1000;
 
-	private static boolean puzzleSolved = false;
+	// private static int maxLoopCount = 1000;
 
 	/**
 	 * Copy constructor. Copy cells from another puzzle to this one.
@@ -41,10 +40,11 @@ public class Puzzle {
 
 		solve();
 
-		if (this.getNumberSolved() < 81) {
+		if (!getPuzzleIsSolved()) {
 			guess();
 		}
-		if (puzzleSolved) {
+
+		if (getPuzzleIsSolved()) {
 
 			System.out
 					.println("******************************************************");
@@ -55,27 +55,35 @@ public class Puzzle {
 			System.out.println(this);
 
 		} else {
-			System.err.println("IMPOSSIBLE!!!");
+			System.out
+					.println("******************************************************");
+			System.out
+					.println("**********************ANSWER:*************************");
+			System.out
+					.println("******************************************************");
+			System.out.println("IMPOSSIBLE!!!");
 
 		}
 
 	}
 
+	public boolean getPuzzleIsSolved() {
+		return (getNumberSolved() == 81);
+	}
+
 	public void solve() {
 
-		puzzleSolved = false;
-		int loops = 0;
+		// int loops = 0;
 
 		changed = true;
-		while (!puzzleSolved && changed && loops < maxLoopCount) {
+		// while (!puzzleSolved && changed && loops < maxLoopCount) {
+		while (!getPuzzleIsSolved() && changed) {
 			changed = false;
-			puzzleSolved = true;
 
 			for (int i = 0; i < 81; i++) {
-				boolean temp = updateCellAt(i);
-				puzzleSolved = puzzleSolved && temp;
+				updateCellAt(i);
 			}
-			loops++;
+
 		}
 
 	}
@@ -198,7 +206,6 @@ public class Puzzle {
 							}
 							Cell temp = this.cells[j][column];
 							if (!temp.getIsSolved()) {
-								System.err.println("HI COLUMN!");
 								temp.excludePossibleSolution(cell
 										.getPossibleSolutions().get(0));
 								temp.excludePossibleSolution(cell
@@ -249,7 +256,6 @@ public class Puzzle {
 							}
 							Cell temp = this.cells[row][j];
 							if (!temp.getIsSolved()) {
-								System.err.println("HI ROW!");
 								temp.excludePossibleSolution(cell
 										.getPossibleSolutions().get(0));
 								temp.excludePossibleSolution(cell
@@ -306,7 +312,6 @@ public class Puzzle {
 								}
 								Cell temp = this.cells[tempRow][tempColumn];
 								if (!temp.getIsSolved()) {
-									System.err.println("HI SQUARE!");
 									temp.excludePossibleSolution(cell
 											.getPossibleSolutions().get(0));
 									temp.excludePossibleSolution(cell
@@ -556,8 +561,7 @@ public class Puzzle {
 
 	private boolean guessNext(Puzzle previousPuzzle) {
 
-		if (getNumberSolved() == 81) {
-			Puzzle.puzzleSolved = true;
+		if (getPuzzleIsSolved()) {
 			return true;
 		}
 		Puzzle tempPuzzle = new Puzzle(this);
@@ -596,8 +600,7 @@ public class Puzzle {
 			}
 			solve();
 
-			if (getNumberSolved() == 81) {
-				Puzzle.puzzleSolved = true;
+			if (getPuzzleIsSolved()) {
 				return true;
 			}
 
@@ -614,8 +617,7 @@ public class Puzzle {
 				if (guessNext(previousPuzzle)) {
 
 					// if the puzzle is solved, quit
-					if (getNumberSolved() == 81) {
-						Puzzle.puzzleSolved = true;
+					if (getPuzzleIsSolved()) {
 						return true;
 					}
 
