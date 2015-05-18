@@ -36,67 +36,12 @@ public class Puzzle {
 		}
 	}
 
-	private void printPossible() {
-
-		String s = "Possible:\n";
-		s += "|============================================"
-				+ "======================================="
-				+ "======================================="
-				+ "======================================="
-				+ "==========================" + "|\n|";
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 9; j++) {
-
-				Cell cell = cells[i][j];
-				int size = cell.getPossibleSolutions().size();
-				if (cell.getIsSolved()) {
-					s += "         " + cell.getAnswer() + "          ";
-				} else if (size == 0) {
-					s += s += "         ?          ";
-				} else {
-					for (int extraSpace = 0; extraSpace < (9 - cells[i][j]
-							.getPossibleSolutions().size()); extraSpace++) {
-						s += " ";
-					}
-
-					s += "[";
-					for (int ansIndex = 0; ansIndex < size; ansIndex++) {
-						s += cell.getPossibleSolutions().get(ansIndex);
-						if (ansIndex < size - 1) {
-							s += ",";
-						}
-
-					}
-					s += "]";
-					for (int extraSpace = 0; extraSpace < (9 - cells[i][j]
-							.getPossibleSolutions().size()); extraSpace++) {
-						s += " ";
-					}
-					s += " ";
-				}
-
-				if (j % 3 == 2) {
-					s += " | ";
-				}
-			}
-			s += "\n|";
-			if (i % 3 == 2) {
-				s += "============================================"
-						+ "======================================="
-						+ "======================================="
-						+ "=========================="
-						+ "=======================================|\n|";
-			}
-
-		}
-		System.out.println(s);
-	}
-
 	public boolean run() {
 
 		solve();
 
 		if (!getPuzzleIsSolved()) {
+			System.out.println(this);
 			System.out.println(">>>>>>>>>>>>>>>START GUESS<<<<<<<<<<<<<<<<");
 			guess();
 		}
@@ -144,9 +89,7 @@ public class Puzzle {
 			}
 
 		}
-		if (Driver.debug) {
-			printPossible();
-		}
+
 	}
 
 	private Cell getCellAt(int index) {
@@ -631,9 +574,10 @@ public class Puzzle {
 		Cell tempCopy = null;
 		int row = -1;
 		int column = -1;
+		int index = -1;
 		// find the first unsolved cell
 		for (int i = 0; i < 81; i++) {
-
+			index = i;
 			row = Cell.getRow(i);
 			column = Cell.getColumn(i);
 			temp = this.cells[row][column];
@@ -648,6 +592,10 @@ public class Puzzle {
 
 		// try each guess for the current cell
 		for (Integer possibleAnswer : tempCopy.getPossibleSolutions()) {
+			if (Driver.debug) {
+				System.out.println("GUESSING:\t" + index + "\t("
+						+ possibleAnswer + ")");
+			}
 
 			temp = this.cells[row][column];
 
@@ -656,7 +604,9 @@ public class Puzzle {
 					System.out.println("???");
 				}
 
-				continue;
+				revert(preGuessPuzzle);
+				temp.setAnswer(possibleAnswer);
+				return false;
 
 			}
 			solve();
@@ -696,15 +646,16 @@ public class Puzzle {
 
 			} else {
 				if (Driver.debug) {
-					System.out.println("=============================");
-					System.out.println("temp REVERT!");
-					System.out.println("pre:\n" + this);
+
+					System.out
+							.println("\n=====================================\n"
+									+ "PREVIOUS1 REVERT!");
 				}
 				/*
 				 * if the guess didn't work, go on to the next possible solution
 				 * for this cell
 				 */
-				revert(preGuessPuzzle);
+				revert(previousPuzzle);
 
 			}// END IF-ELSE [CHECK VALID]
 
@@ -712,7 +663,7 @@ public class Puzzle {
 
 		if (!containsValidSoution) {
 			if (Driver.debug) {
-				System.out.println("PREV REVERT");
+				System.out.println("PREVIOUS2 REVERT");
 			}
 
 			revert(previousPuzzle);
@@ -725,14 +676,19 @@ public class Puzzle {
 	}
 
 	private void revert(Puzzle other) {
-		if (this.getNumberSolved() == 81) {
+		if (getPuzzleIsSolved()) {
+			System.out.println("REVERT ATTEMPT THWARTED! ALREADY SOLVED");
 			return;
 		}
 		if (Driver.debug) {
+
 			System.out.println("************reverting*****************");
+			System.out.println("Pre:\n");
+			System.out.println(this);
 		}
 		this.copyPuzzle(other);
 		if (Driver.debug) {
+			System.out.println("POST:");
 			System.out.println(this);
 		}
 
@@ -799,18 +755,56 @@ public class Puzzle {
 
 	@Override
 	public String toString() {
-		String s = "";
+		String s = "\n\n";
+		s += "|============================================"
+				+ "======================================="
+				+ "======================================="
+				+ "======================================="
+				+ "==========================" + "|\n|";
 		for (int i = 0; i < 9; i++) {
 			for (int j = 0; j < 9; j++) {
-				s += cells[i][j] + " ";
+
+				Cell cell = cells[i][j];
+				int size = cell.getPossibleSolutions().size();
+				if (cell.getIsSolved()) {
+					s += "         " + cell.getAnswer() + "          ";
+				} else if (size == 0) {
+					s += s += "         ?          ";
+				} else {
+					for (int extraSpace = 0; extraSpace < (9 - cells[i][j]
+							.getPossibleSolutions().size()); extraSpace++) {
+						s += " ";
+					}
+
+					s += "[";
+					for (int ansIndex = 0; ansIndex < size; ansIndex++) {
+						s += cell.getPossibleSolutions().get(ansIndex);
+						if (ansIndex < size - 1) {
+							s += ",";
+						}
+
+					}
+					s += "]";
+					for (int extraSpace = 0; extraSpace < (9 - cells[i][j]
+							.getPossibleSolutions().size()); extraSpace++) {
+						s += " ";
+					}
+					s += " ";
+				}
+
 				if (j % 3 == 2) {
 					s += " | ";
 				}
 			}
-			s += "\n";
+			s += "\n|";
 			if (i % 3 == 2) {
-				s += "\n";
+				s += "============================================"
+						+ "======================================="
+						+ "======================================="
+						+ "=========================="
+						+ "=======================================|\n|";
 			}
+
 		}
 		return s;
 	}

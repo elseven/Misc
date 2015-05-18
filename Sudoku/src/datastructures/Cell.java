@@ -57,7 +57,8 @@ public class Cell {
 	public boolean setAnswer(int answer) {
 		if (!possibleSolutions.contains(answer)) {
 			if (Driver.debug) {
-				System.err.println("DOES NOT CONTAIN ANSWER!!!");
+				System.err.println("DOES NOT CONTAIN ANSWER!!! " + answer
+						+ "pick from: " + possibleSolutions);
 			}
 
 			return false;
