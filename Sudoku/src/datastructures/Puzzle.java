@@ -36,11 +36,68 @@ public class Puzzle {
 		}
 	}
 
-	public void run() {
+	private void printPossible() {
+
+		String s = "Possible:\n";
+		s += "|============================================"
+				+ "======================================="
+				+ "======================================="
+				+ "======================================="
+				+ "==========================" + "|\n|";
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+
+				Cell cell = cells[i][j];
+				int size = cell.getPossibleSolutions().size();
+				if (cell.getIsSolved()) {
+					s += "         " + cell.getAnswer() + "          ";
+				} else if (size == 0) {
+					s += s += "         ?          ";
+				} else {
+					for (int extraSpace = 0; extraSpace < (9 - cells[i][j]
+							.getPossibleSolutions().size()); extraSpace++) {
+						s += " ";
+					}
+
+					s += "[";
+					for (int ansIndex = 0; ansIndex < size; ansIndex++) {
+						s += cell.getPossibleSolutions().get(ansIndex);
+						if (ansIndex < size - 1) {
+							s += ",";
+						}
+
+					}
+					s += "]";
+					for (int extraSpace = 0; extraSpace < (9 - cells[i][j]
+							.getPossibleSolutions().size()); extraSpace++) {
+						s += " ";
+					}
+					s += " ";
+				}
+
+				if (j % 3 == 2) {
+					s += " | ";
+				}
+			}
+			s += "\n|";
+			if (i % 3 == 2) {
+				s += "============================================"
+						+ "======================================="
+						+ "======================================="
+						+ "=========================="
+						+ "=======================================|\n|";
+			}
+
+		}
+		System.out.println(s);
+	}
+
+	public boolean run() {
 
 		solve();
 
 		if (!getPuzzleIsSolved()) {
+			System.out.println(">>>>>>>>>>>>>>>START GUESS<<<<<<<<<<<<<<<<");
 			guess();
 		}
 
@@ -53,6 +110,7 @@ public class Puzzle {
 			System.out
 					.println("******************************************************");
 			System.out.println(this);
+			return true;
 
 		} else {
 			System.out
@@ -64,6 +122,7 @@ public class Puzzle {
 					.println("??????????????????????????????????????????????????????");
 			System.out
 					.println("??????????????????????????????????????????????????????");
+			return false;
 
 		}
 
@@ -73,9 +132,7 @@ public class Puzzle {
 		return (getNumberSolved() == 81);
 	}
 
-	public void solve() {
-
-		// int loops = 0;
+	public void solve() { // int loops = 0;
 
 		changed = true;
 		// while (!puzzleSolved && changed && loops < maxLoopCount) {
@@ -87,7 +144,9 @@ public class Puzzle {
 			}
 
 		}
-
+		if (Driver.debug) {
+			printPossible();
+		}
 	}
 
 	private Cell getCellAt(int index) {
@@ -566,7 +625,7 @@ public class Puzzle {
 		if (getPuzzleIsSolved()) {
 			return true;
 		}
-		Puzzle tempPuzzle = new Puzzle(this);
+		Puzzle preGuessPuzzle = new Puzzle(this);
 
 		Cell temp = null;
 		Cell tempCopy = null;
@@ -601,6 +660,7 @@ public class Puzzle {
 
 			}
 			solve();
+			Puzzle currentPuzzle = new Puzzle(this);
 
 			if (getPuzzleIsSolved()) {
 				return true;
@@ -616,7 +676,7 @@ public class Puzzle {
 				containsValidSoution = true;
 
 				// if the next guess works
-				if (guessNext(tempPuzzle)) {
+				if (guessNext(currentPuzzle)) {
 
 					// if the puzzle is solved, quit
 					if (getPuzzleIsSolved()) {
@@ -630,7 +690,7 @@ public class Puzzle {
 					 * guess didn't immediately fail, revert to before any
 					 * guesses
 					 */
-					revert(previousPuzzle);
+					revert(preGuessPuzzle);
 
 				}
 
@@ -644,9 +704,8 @@ public class Puzzle {
 				 * if the guess didn't work, go on to the next possible solution
 				 * for this cell
 				 */
-				revert(tempPuzzle);
+				revert(preGuessPuzzle);
 
-				// this.printPossibleStuff();
 			}// END IF-ELSE [CHECK VALID]
 
 		}// END FOR EACH SOLUTION
